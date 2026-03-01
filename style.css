@@ -1059,10 +1059,6 @@ select.input {
         width: 100%;
     }
 
-    .footer {
-        left: 50%;
-        transform: translateX(-50%);
-    }
 
     .nutrition-preview {
         grid-template-columns: repeat(3, 1fr);
