@@ -307,6 +307,7 @@
       this.renderGroupItems();
       this.renderTotal();
       this.renderRecent();
+      lucide.createIcons();
     },
 
     bindEvents() {
@@ -527,7 +528,7 @@
       $('#btn-recent-done').classList.toggle('hidden', !isEditing);
 
       DOM.recentList.innerHTML = state.recent.map((name, i) => {
-        const removeBtn = isEditing ? `<span class="chip-remove" data-idx="${i}">✕</span>` : '';
+        const removeBtn = isEditing ? `<span class="chip-remove" data-idx="${i}"><i data-lucide="x"></i></span>` : '';
         return `<button class="recent-chip" data-idx="${i}">${name}${removeBtn}</button>`;
       }).join('');
 
@@ -773,7 +774,7 @@
             <div class="food-item-detail">${detail} · 碳${n.carb} 蛋${n.protein} 脂${n.fat}</div>
           </div>
           <div class="food-item-cal">${n.calories} kcal</div>
-          <button class="icon-btn food-item-remove" data-idx="${i}">✕</button>
+          <button class="icon-btn food-item-remove" data-idx="${i}"><i data-lucide="x"></i></button>
         </div>`;
       }).join('');
 
@@ -850,7 +851,7 @@
       `;
 
       // ── 餐別熱量分佈 ──
-      const mealColors = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+      const mealColors = ['#7C9EDE', '#F4C454', '#F08CA5', '#8ECA99', '#BCA0E6', '#F4A674', '#78C4CD', '#D990B0'];
       const mealData = [];
       state.groupOrder.forEach((g, i) => {
         const items = state.groups[g] || [];
@@ -904,7 +905,7 @@
             <div class="preset-actions">
               <input type="number" class="input preset-qty-input" data-preset-qty="${i}" value="1" min="1" step="1">
               <button class="btn" data-preset-use="${i}">加入</button>
-              <button class="icon-btn food-item-remove" data-preset-del="${i}">✕</button>
+              <button class="icon-btn food-item-remove" data-preset-del="${i}"><i data-lucide="x"></i></button>
             </div>
           </div>
           <div class="preset-foods">${foods}</div>
@@ -1341,5 +1342,15 @@
 
   // ── Init ──────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => UI.init());
+
+  // Lucide icons: re-render after any dynamic content update
+  const _origRenderTabs = UI.renderTabs.bind(UI);
+  const _origRenderGroupItems = UI.renderGroupItems.bind(UI);
+  const _origRenderRecent = UI.renderRecent.bind(UI);
+  const _origRenderPresetsList = UI.renderPresetsList.bind(UI);
+  UI.renderTabs = function (...args) { _origRenderTabs(...args); lucide.createIcons(); };
+  UI.renderGroupItems = function (...args) { _origRenderGroupItems(...args); lucide.createIcons(); };
+  UI.renderRecent = function (...args) { _origRenderRecent(...args); lucide.createIcons(); };
+  UI.renderPresetsList = function (...args) { _origRenderPresetsList(...args); lucide.createIcons(); };
 
 })();
