@@ -767,6 +767,84 @@ select.input {
     margin-top: var(--gap-sm);
 }
 
+/* ===== Import ===== */
+.import-date-row {
+    display: flex;
+    gap: var(--gap-sm);
+    align-items: center;
+}
+
+.import-records {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-sm);
+}
+
+.import-meal-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.import-meal-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--c-primary);
+    padding: var(--gap-xs) 0;
+    border-bottom: 1px solid var(--c-border-light);
+}
+
+.import-record-item {
+    display: flex;
+    align-items: center;
+    gap: var(--gap-sm);
+    padding: var(--gap-xs) 0;
+    border-bottom: 1px solid var(--c-border-light);
+}
+
+.import-record-item:last-child {
+    border-bottom: none;
+}
+
+.import-record-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.import-record-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.import-record-detail {
+    font-size: 0.75rem;
+    color: var(--c-text-muted);
+}
+
+.import-record-cal {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.import-empty {
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--c-text-muted);
+    padding: var(--gap-lg);
+}
+
+.import-total {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--c-text-secondary);
+    text-align: center;
+    padding: var(--gap-sm) 0;
+    border-top: 1px solid var(--c-border);
+}
+
 /* ===== Export ===== */
 .export-textarea {
     width: 100%;

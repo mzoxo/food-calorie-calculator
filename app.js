@@ -102,6 +102,22 @@
       if (data.error) throw new Error(data.error);
       return Array.isArray(data) ? data : [];
     },
+
+    async fetchDefaultFoods() {
+      const res = await fetch('./foods.json');
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      return Array.isArray(data) ? data : [];
+    },
+
+    async fetchDiet(date) {
+      const url = `${Config.apiUrl}?token=${encodeURIComponent(Config.token)}&action=getDiet&date=${encodeURIComponent(date)}`;
+      const res = await fetch(url, { redirect: 'follow' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      return data;
+    },
   };
 
   // ── Search ────────────────────────────────────────
@@ -251,6 +267,14 @@
     exportOverlay: $('#export-overlay'),
     exportText: $('#export-text'),
     toast: $('#toast'),
+    btnImport: $('#btn-import'),
+    importOverlay: $('#import-overlay'),
+    importDate: $('#input-import-date'),
+    importLoading: $('#import-loading'),
+    importRecords: $('#import-records'),
+    btnImportConfirm: $('#btn-import-confirm'),
+    mealBar: $('#meal-bar'),
+    mealDetails: $('#meal-details'),
   };
 
   // ── Add-food modal state ──────────────────────────
@@ -272,11 +296,12 @@
         state.activeGroup = state.groupOrder[0];
       }
 
-      if (!Config.isConfigured) {
-        DOM.setupNotice.classList.remove('hidden');
-      } else {
-        this.loadFoods();
+      // 有 token 時顯示匯入按鈕
+      if (Config.isConfigured) {
+        DOM.btnImport.classList.remove('hidden');
       }
+
+      this.loadFoods();
 
       this.renderTabs();
       this.renderGroupItems();
@@ -330,9 +355,15 @@
 
       // Footer actions
       $('#btn-presets').addEventListener('click', () => this.openPresets());
+      DOM.btnImport.addEventListener('click', () => this.openImport());
       $('#btn-export').addEventListener('click', () => this.openExport());
       $('#btn-clear-current').addEventListener('click', () => this.clearCurrent());
       $('#btn-clear-all').addEventListener('click', () => this.clearAll());
+
+      // Import
+      $('#btn-import-close').addEventListener('click', () => this.closeImport());
+      $('#btn-import-query').addEventListener('click', () => this.queryImport());
+      DOM.btnImportConfirm.addEventListener('click', () => this.confirmImport());
 
       // Presets
       $('#btn-presets-close').addEventListener('click', () => this.closePresets());
@@ -344,7 +375,7 @@
 
       // Close overlays on backdrop click
       [DOM.settingsOverlay, DOM.addFoodOverlay, DOM.presetsOverlay, DOM.exportOverlay,
-      $('#preset-save-overlay'), $('#preset-use-overlay'), $('#input-overlay'), $('#confirm-overlay')].forEach(el => {
+      DOM.importOverlay, $('#preset-save-overlay'), $('#preset-use-overlay'), $('#input-overlay'), $('#confirm-overlay')].forEach(el => {
         el.addEventListener('click', (e) => {
           if (e.target === el) el.classList.add('hidden');
         });
@@ -380,6 +411,7 @@
       Config.token = token;
       this.closeSettings();
       DOM.setupNotice.classList.add('hidden');
+      DOM.btnImport.classList.toggle('hidden', !Config.isConfigured);
       toast('設定已儲存');
       this.loadFoods(true);
     },
@@ -396,32 +428,41 @@
         }
       }
 
-      if (!Config.isConfigured) {
-        state.foods = [];
-        state.useMock = false;
-        toast('請先完成 API 設定');
-        return;
-      }
-
       DOM.loading.classList.remove('hidden');
       try {
-        const foods = await API.fetchFoods();
-        state.foods = foods;
-        state.useMock = false;
-        Config.saveCache(foods);
-        toast(`已載入 ${foods.length} 筆食材`);
+        if (Config.isConfigured) {
+          // 從 API 載入
+          const foods = await API.fetchFoods();
+          state.foods = foods;
+          state.useMock = false;
+          Config.saveCache(foods);
+          toast(`已載入 ${foods.length} 筆食材`);
+        } else {
+          // 未設定 API，使用預設資料庫
+          const foods = await API.fetchDefaultFoods();
+          state.foods = foods;
+          state.useMock = false;
+          toast(`已載入預設資料庫 (${foods.length} 筆)`);
+        }
       } catch (err) {
         console.error('載入失敗:', err);
-        // fallback to cache
+        // fallback: 快取 → 預設資料庫
         const cached = Config.loadCache();
         if (cached && cached.length > 0) {
           state.foods = cached;
           state.useMock = false;
           toast('載入失敗，使用快取資料');
         } else {
-          state.foods = [];
-          state.useMock = false;
-          toast('載入失敗，請檢查設定');
+          try {
+            const foods = await API.fetchDefaultFoods();
+            state.foods = foods;
+            state.useMock = false;
+            toast(`使用預設資料庫 (${foods.length} 筆)`);
+          } catch (e2) {
+            state.foods = [];
+            state.useMock = false;
+            toast('載入失敗，請檢查設定');
+          }
         }
       } finally {
         DOM.loading.classList.add('hidden');
@@ -807,6 +848,36 @@
           <span class="macro-percent"></span>
         </div>
       `;
+
+      // ── 餐別熱量分佈 ──
+      const mealColors = ['#6366f1', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#ec4899', '#14b8a6', '#f97316'];
+      const mealData = [];
+      state.groupOrder.forEach((g, i) => {
+        const items = state.groups[g] || [];
+        if (items.length === 0) return;
+        const sub = Calc.subtotal(items);
+        mealData.push({ name: g, cal: sub.calories, color: mealColors[i % mealColors.length] });
+      });
+
+      if (mealData.length > 0) {
+        DOM.mealBar.innerHTML = mealData.map(m => {
+          const pct = t.calories > 0 ? (m.cal / t.calories * 100) : 0;
+          return `<div style="width:${pct}%;background:${m.color};transition:width 0.3s;"></div>`;
+        }).join('');
+
+        DOM.mealDetails.innerHTML = mealData.map(m => {
+          const pct = t.calories > 0 ? Math.round(m.cal / t.calories * 100) : 0;
+          return `<div class="macro-item">
+            <span class="macro-dot" style="background:${m.color}"></span>
+            <span class="macro-label">${m.name}</span>
+            <span class="macro-value">${m.cal} kcal</span>
+            <span class="macro-percent">${pct}%</span>
+          </div>`;
+        }).join('');
+      } else {
+        DOM.mealBar.innerHTML = '';
+        DOM.mealDetails.innerHTML = '';
+      }
     },
 
     // ── Presets ──
@@ -984,6 +1055,156 @@
       this.renderPresetsList();
       const label = divider > 1 ? ` (÷${divider})` : '';
       toast(`已儲存「${name}」${label}`);
+    },
+
+    // ── Import ──
+    openImport() {
+      // 預設日期為今天
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, '0');
+      const dd = String(today.getDate()).padStart(2, '0');
+      DOM.importDate.value = `${yyyy}-${mm}-${dd}`;
+      DOM.importRecords.innerHTML = '';
+      DOM.btnImportConfirm.classList.add('hidden');
+      DOM.importLoading.classList.add('hidden');
+      state._importData = null;
+      DOM.importOverlay.classList.remove('hidden');
+    },
+
+    closeImport() {
+      DOM.importOverlay.classList.add('hidden');
+    },
+
+    async queryImport() {
+      const dateVal = DOM.importDate.value;
+      if (!dateVal) { toast('請選擇日期'); return; }
+
+      // 轉換日期格式 yyyy-MM-dd → yyyy/MM/dd
+      const dateStr = dateVal.replace(/-/g, '/');
+
+      DOM.importLoading.classList.remove('hidden');
+      DOM.importRecords.innerHTML = '';
+      DOM.btnImportConfirm.classList.add('hidden');
+
+      try {
+        const data = await API.fetchDiet(dateStr);
+        const records = data.records || [];
+
+        if (records.length === 0) {
+          DOM.importRecords.innerHTML = '<div class="import-empty">該日無飲食記錄</div>';
+          state._importData = null;
+        } else {
+          state._importData = records;
+          // 依餐別分組顯示
+          const grouped = {};
+          records.forEach(r => {
+            const meal = r['餐別'] || '其他';
+            if (!grouped[meal]) grouped[meal] = [];
+            grouped[meal].push(r);
+          });
+
+          let html = '';
+          for (const [meal, items] of Object.entries(grouped)) {
+            html += `<div class="import-meal-group">`;
+            html += `<div class="import-meal-label">${meal}</div>`;
+            items.forEach(r => {
+              const name = r['食品名稱'] || '';
+              const qty = r['份量'] || '';
+              const unit = r['單位'] || '';
+              const cal = r['熱量'] || 0;
+              html += `<div class="import-record-item">
+                <div class="import-record-info">
+                  <div class="import-record-name">${name}</div>
+                  <div class="import-record-detail">${qty}${unit} · 碳${r['碳水'] || 0} 蛋${r['蛋白質'] || 0} 脂${r['脂肪'] || 0}</div>
+                </div>
+                <div class="import-record-cal">${cal} kcal</div>
+              </div>`;
+            });
+            html += `</div>`;
+          }
+
+          // 總計
+          const totalCal = records.reduce((s, r) => s + (parseFloat(r['熱量']) || 0), 0);
+          html += `<div class="import-total">共 ${records.length} 筆，合計 ${Math.round(totalCal)} kcal</div>`;
+
+          DOM.importRecords.innerHTML = html;
+          DOM.btnImportConfirm.classList.remove('hidden');
+        }
+      } catch (err) {
+        console.error('查詢飲食記錄失敗:', err);
+        DOM.importRecords.innerHTML = '<div class="import-empty">查詢失敗，請檢查設定</div>';
+        state._importData = null;
+      } finally {
+        DOM.importLoading.classList.add('hidden');
+      }
+    },
+
+    confirmImport() {
+      const records = state._importData;
+      if (!records || records.length === 0) return;
+
+      let importCount = 0;
+      records.forEach(r => {
+        // 決定群組，餐別對應到群組名稱
+        const meal = r['餐別'] || '其他';
+        // 確保群組存在
+        if (!state.groups[meal]) {
+          state.groups[meal] = [];
+          if (!state.groupOrder.includes(meal)) state.groupOrder.push(meal);
+        }
+
+        // 嘗試比對已有食材
+        const foodName = r['食品名稱'] || '';
+        let food = state.foods.find(f => f['名稱'] === foodName);
+
+        if (food) {
+          // 比對到已有食材，使用克數模式
+          const qty = parseFloat(r['份量']) || 100;
+          const unit = r['單位'] || '';
+          if (unit === '份') {
+            state.groups[meal].push({ food, quantity: qty, mode: 'serving' });
+          } else {
+            state.groups[meal].push({ food, quantity: qty, mode: 'gram' });
+          }
+        } else {
+          // 未比對到，使用 API 回傳的營養數據建立 inline food 物件
+          const cal = parseFloat(r['熱量']) || 0;
+          const protein = parseFloat(r['蛋白質']) || 0;
+          const fat = parseFloat(r['脂肪']) || 0;
+          const carb = parseFloat(r['碳水']) || 0;
+          const qty = parseFloat(r['份量']) || 1;
+
+          food = {
+            '名稱': foodName,
+            '分類': '',
+            '品牌': '',
+            '別名': '',
+            '每份量(g)': qty,
+            '每份熱量': cal,
+            '每份碳水': carb,
+            '每份脂肪': fat,
+            '每份蛋白質': protein,
+            '每份膳食纖維': 0,
+            '每 100g 熱量': qty > 0 ? Math.round(cal / qty * 100 * 10) / 10 : 0,
+            '每 100g 碳水': qty > 0 ? Math.round(carb / qty * 100 * 10) / 10 : 0,
+            '每 100g 脂肪': qty > 0 ? Math.round(fat / qty * 100 * 10) / 10 : 0,
+            '每 100g 蛋白質': qty > 0 ? Math.round(protein / qty * 100 * 10) / 10 : 0,
+            '每 100g 膳食纖維': 0,
+          };
+          // 以 1 份匯入
+          state.groups[meal].push({ food, quantity: 1, mode: 'serving' });
+        }
+        importCount++;
+      });
+
+      state.activeGroup = state.groupOrder[0];
+      Config.saveState();
+      this.closeImport();
+      this.renderTabs();
+      this.renderGroupItems();
+      this.renderTotal();
+      toast(`已匯入 ${importCount} 筆飲食記錄`);
     },
 
     // ── Export ──

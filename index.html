@@ -128,12 +128,15 @@
             <div id="total-calories" class="total-calories"></div>
             <div id="macro-bar" class="macro-bar"></div>
             <div id="macro-details" class="macro-details"></div>
+            <div id="meal-bar" class="macro-bar" style="margin-top:var(--gap-md);"></div>
+            <div id="meal-details" class="macro-details"></div>
         </section>
     </main>
 
     <!-- ===== 底部操作列 ===== -->
     <footer class="footer">
         <button id="btn-presets" class="btn btn-outline">常用組合</button>
+        <button id="btn-import" class="btn btn-outline hidden">匯入</button>
         <button id="btn-export" class="btn btn-outline">匯出</button>
         <button id="btn-clear-current" class="btn btn-outline">清除計算</button>
     </footer>
@@ -193,6 +196,27 @@
                 <div id="preset-use-foods" class="food-info"></div>
                 <div id="preset-use-preview" class="nutrition-preview"></div>
                 <button id="btn-preset-use-confirm" class="btn btn-primary btn-block">加入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯入彈窗 -->
+    <div id="import-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>匯入飲食記錄</h2>
+                <button id="btn-import-close" class="icon-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="import-date-row">
+                    <input id="input-import-date" type="date" class="input" style="flex:1;">
+                    <button id="btn-import-query" class="btn btn-primary">查詢</button>
+                </div>
+                <div id="import-loading" class="notice hidden">
+                    <p>查詢中…</p>
+                </div>
+                <div id="import-records" class="import-records"></div>
+                <button id="btn-import-confirm" class="btn btn-primary btn-block hidden">確認匯入</button>
             </div>
         </div>
     </div>
