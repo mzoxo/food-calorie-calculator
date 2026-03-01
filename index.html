@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="快速計算食材卡路里並加總的工具">
+    <title>食材卡路里計算器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- ===== 頂部 ===== -->
+    <header class="header">
+        <h1 class="header-title">卡路里計算器</h1>
+        <div class="header-actions">
+            <button id="btn-refresh" class="icon-btn" title="重新整理食材資料">↻</button>
+            <button id="btn-settings" class="icon-btn" title="設定">⚙</button>
+        </div>
+    </header>
+
+    <!-- ===== 設定彈窗 ===== -->
+    <div id="settings-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>設定</h2>
+                <button id="btn-settings-close" class="icon-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <label class="field">
+                    <span class="field-label">API URL</span>
+                    <input id="input-api-url" type="url" class="input"
+                        placeholder="https://script.google.com/macros/s/…/exec">
+                </label>
+                <label class="field">
+                    <span class="field-label">TOKEN</span>
+                    <input id="input-token" type="password" class="input" placeholder="輸入你的 Token">
+                </label>
+                <button id="btn-settings-save" class="btn btn-primary btn-block">儲存設定</button>
+                <hr style="margin:12px 0;border:0;border-top:1px solid var(--c-border-light);">
+                <button id="btn-clear-all" class="btn btn-danger-outline btn-block">清除所有資料</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== 主內容 ===== -->
+    <main class="main">
+        <!-- 提示：尚未設定 -->
+        <div id="setup-notice" class="notice hidden">
+            <p>尚未設定 API，請先<button id="btn-open-settings" class="link-btn">完成設定</button></p>
+        </div>
+
+        <!-- 載入狀態 -->
+        <div id="loading" class="notice hidden">
+            <p>載入食材資料中…</p>
+        </div>
+
+        <!-- 搜尋區 -->
+        <section id="search-section" class="section">
+            <div class="search-box">
+                <input id="input-search" type="text" class="input" placeholder="搜尋食材名稱、別名、品牌…">
+                <button id="btn-clear-search" class="icon-btn search-clear hidden">✕</button>
+            </div>
+            <!-- 搜尋結果下拉 -->
+            <ul id="search-results" class="dropdown hidden"></ul>
+            <!-- 最近使用 -->
+            <div id="recent-section" class="recent-section hidden">
+                <div class="recent-header">
+                    <span class="recent-label">最近使用</span>
+                    <div class="recent-header-actions">
+                        <button id="btn-recent-edit" class="recent-edit-btn">編輯</button>
+                        <button id="btn-recent-clear-all" class="recent-edit-btn hidden">全部清除</button>
+                        <button id="btn-recent-done" class="recent-edit-btn dark hidden">完成</button>
+                    </div>
+                </div>
+                <div id="recent-list" class="recent-list"></div>
+            </div>
+        </section>
+
+        <!-- 添加食材彈窗 -->
+        <div id="add-food-overlay" class="overlay hidden">
+            <div class="modal">
+                <div class="modal-header">
+                    <h2 id="add-food-title">添加食材</h2>
+                    <button id="btn-add-food-close" class="icon-btn">✕</button>
+                </div>
+                <div class="modal-body">
+                    <div class="food-info" id="add-food-info"></div>
+                    <div class="input-mode-toggle">
+                        <button id="btn-mode-gram" class="toggle-btn active">克數 (g)</button>
+                        <button id="btn-mode-serving" class="toggle-btn">份數</button>
+                    </div>
+                    <div class="quantity-row">
+                        <button id="btn-qty-minus" class="qty-btn">−</button>
+                        <input id="input-quantity" type="number" class="input qty-input" value="100" min="0" step="10">
+                        <span id="qty-unit" class="qty-unit">g</span>
+                        <button id="btn-qty-plus" class="qty-btn">+</button>
+                    </div>
+                    <div id="nutrition-preview" class="nutrition-preview"></div>
+                    <div class="field">
+                        <span class="field-label">加入群組</span>
+                        <select id="select-group" class="input"></select>
+                    </div>
+                    <button id="btn-add-confirm" class="btn btn-primary btn-block">加入</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 群組區 -->
+        <section id="groups-section" class="section">
+            <div class="tabs-bar">
+                <div id="group-tabs" class="tabs"></div>
+                <button id="btn-add-group" class="icon-btn" title="新增群組">+</button>
+            </div>
+
+            <!-- 群組食材清單 -->
+            <div id="group-items" class="group-items"></div>
+
+            <!-- 群組小計 -->
+            <div id="group-subtotal" class="subtotal hidden"></div>
+        </section>
+
+        <!-- 營養總覽 -->
+        <section id="total-section" class="section hidden">
+            <div class="section-header">
+                <h2 class="section-title">總計</h2>
+            </div>
+            <div id="total-calories" class="total-calories"></div>
+            <div id="macro-bar" class="macro-bar"></div>
+            <div id="macro-details" class="macro-details"></div>
+        </section>
+    </main>
+
+    <!-- ===== 底部操作列 ===== -->
+    <footer class="footer">
+        <button id="btn-presets" class="btn btn-outline">常用組合</button>
+        <button id="btn-export" class="btn btn-outline">匯出</button>
+        <button id="btn-clear-current" class="btn btn-outline">清除計算</button>
+    </footer>
+
+    <!-- 常用組合彈窗 -->
+    <div id="presets-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>常用組合</h2>
+                <button id="btn-presets-close" class="icon-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="presets-list" class="presets-list"></div>
+                <div class="presets-actions">
+                    <button id="btn-save-preset" class="btn btn-primary btn-block">將目前群組儲存為常用組合</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 常用組合儲存彈窗（名稱 + 分份） -->
+    <div id="preset-save-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>儲存常用組合</h2>
+                <button id="btn-preset-save-close" class="icon-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <label class="field">
+                    <span class="field-label">組合名稱</span>
+                    <input id="input-preset-name" type="text" class="input" placeholder="例如：混合飯、便當菜">
+                </label>
+                <label class="field">
+                    <span class="field-label">分成幾份（食材會除以此數值）</span>
+                    <div class="quantity-row">
+                        <button id="btn-preset-save-div-minus" class="qty-btn">−</button>
+                        <input id="input-preset-divider" type="number" class="input qty-input" value="1" min="1"
+                            step="1">
+                        <span class="qty-unit">份</span>
+                        <button id="btn-preset-save-div-plus" class="qty-btn">+</button>
+                    </div>
+                </label>
+                <div id="preset-save-preview" class="nutrition-preview"></div>
+                <button id="btn-preset-save-confirm" class="btn btn-primary btn-block">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 常用組合使用彈窗 -->
+    <div id="preset-use-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="preset-use-title">加入常用組合</h2>
+                <button id="btn-preset-use-close" class="icon-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <div id="preset-use-foods" class="food-info"></div>
+                <div id="preset-use-preview" class="nutrition-preview"></div>
+                <button id="btn-preset-use-confirm" class="btn btn-primary btn-block">加入</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 匯出彈窗 -->
+    <div id="export-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>匯出</h2>
+                <button id="btn-export-close" class="icon-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <textarea id="export-text" class="export-textarea" readonly></textarea>
+                <button id="btn-copy" class="btn btn-primary btn-block">複製到剪貼簿</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 確認彈窗 -->
+    <div id="confirm-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-body" style="text-align:center;">
+                <p id="confirm-message" style="margin-bottom:12px;"></p>
+                <div style="display:flex;gap:8px;">
+                    <button id="btn-confirm-cancel" class="btn btn-outline" style="flex:1;">取消</button>
+                    <button id="btn-confirm-ok" class="btn btn-primary" style="flex:1;">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 通用輸入彈窗（取代 prompt） -->
+    <div id="input-overlay" class="overlay hidden">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="input-modal-title">輸入</h2>
+                <button id="btn-input-close" class="icon-btn">✕</button>
+            </div>
+            <div class="modal-body">
+                <input id="input-modal-value" type="text" class="input" placeholder="">
+                <div style="display:flex;gap:8px;">
+                    <button id="btn-input-cancel" class="btn btn-outline" style="flex:1;">取消</button>
+                    <button id="btn-input-ok" class="btn btn-primary" style="flex:1;">確定</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 通知 -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
