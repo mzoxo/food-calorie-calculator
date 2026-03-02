@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=4">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 </head>
 
@@ -129,11 +129,20 @@
             <div class="section-header">
                 <h2 class="section-title">總計</h2>
             </div>
-            <div id="total-calories" class="total-calories"></div>
-            <div id="macro-bar" class="macro-bar"></div>
-            <div id="macro-details" class="macro-details"></div>
-            <div id="meal-bar" class="macro-bar" style="margin-top:var(--gap-md);"></div>
-            <div id="meal-details" class="macro-details"></div>
+
+            <div class="total-donuts-wrapper">
+                <div class="total-content">
+                    <div class="donut-container" id="macro-chart">
+                        <!-- 內部將由 JS 注入 .donut 與中間文字 -->
+                    </div>
+                    <div id="macro-details" class="macro-details"></div>
+                </div>
+
+                <div class="total-content">
+                    <div class="donut-container" id="meal-chart"></div>
+                    <div id="meal-details" class="macro-details"></div>
+                </div>
+            </div>
         </section>
     </main>
 
@@ -272,7 +281,7 @@
     <!-- Toast 通知 -->
     <div id="toast" class="toast hidden"></div>
 
-    <script src="app.js"></script>
+    <script src="app.js?v=5"></script>
 </body>
 
 </html>

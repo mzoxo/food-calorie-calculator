@@ -30,7 +30,7 @@
 
     get apiUrl() { return localStorage.getItem(this.KEY_API) || ''; },
     set apiUrl(v) { localStorage.setItem(this.KEY_API, v); },
-    get token() { return localStorage.getItem(this.KEY_TOKEN) || ''; },
+    get token() { return (localStorage.getItem(this.KEY_TOKEN) || '').toLowerCase(); },
     set token(v) { localStorage.setItem(this.KEY_TOKEN, v); },
 
     get isConfigured() { return !!(this.apiUrl && this.token); },
@@ -810,17 +810,33 @@
       DOM.totalSection.classList.toggle('hidden', !hasItems);
       if (!hasItems) return;
 
-      DOM.totalCalories.innerHTML = `${t.calories} <span>kcal</span>`;
+      const macroChart = $('#macro-chart');
+      const mealChart = $('#meal-chart');
 
+      // === Macro Donut Chart ===
       const totalMacro = t.carb * 4 + t.protein * 4 + t.fat * 9;
       const cp = totalMacro > 0 ? Math.round(t.carb * 4 / totalMacro * 100) : 0;
       const pp = totalMacro > 0 ? Math.round(t.protein * 4 / totalMacro * 100) : 0;
       const fp = totalMacro > 0 ? 100 - cp - pp : 0;
 
-      DOM.macroBar.innerHTML = `
-        <div class="macro-bar-carb" style="width:${cp}%"></div>
-        <div class="macro-bar-protein" style="width:${pp}%"></div>
-        <div class="macro-bar-fat" style="width:${fp}%"></div>
+      // 產生 conic-gradient (碳水 -> 蛋白質 -> 脂肪)
+      let conicMacro = `var(--c-surface) 0deg, var(--c-surface) 360deg`;
+      if (totalMacro > 0) {
+        const deg1 = Math.round(cp * 3.6);
+        const deg2 = deg1 + Math.round(pp * 3.6);
+        conicMacro = `
+          var(--c-carb) 0deg ${deg1}deg,
+          var(--c-protein) ${deg1}deg ${deg2}deg,
+          var(--c-fat) ${deg2}deg 360deg
+        `;
+      }
+
+      macroChart.innerHTML = `
+        <div class="donut-chart" style="background: conic-gradient(${conicMacro})"></div>
+        <div class="donut-text">
+          <span class="donut-cal">${t.calories}</span>
+          <span class="donut-unit">kcal</span>
+        </div>
       `;
 
       DOM.macroDetails.innerHTML = `
@@ -850,7 +866,7 @@
         </div>
       `;
 
-      // ── 餐別熱量分佈 ──
+      // === Meal Donut Chart ===
       const mealColors = ['#7C9EDE', '#F4C454', '#F08CA5', '#8ECA99', '#BCA0E6', '#F4A674', '#78C4CD', '#D990B0'];
       const mealData = [];
       state.groupOrder.forEach((g, i) => {
@@ -861,10 +877,30 @@
       });
 
       if (mealData.length > 0) {
-        DOM.mealBar.innerHTML = mealData.map(m => {
+        let currentDeg = 0;
+        const stops = [];
+        mealData.forEach(m => {
           const pct = t.calories > 0 ? (m.cal / t.calories * 100) : 0;
-          return `<div style="width:${pct}%;background:${m.color};transition:width 0.3s;"></div>`;
-        }).join('');
+          const deg = Math.round(pct * 3.6);
+          stops.push(`${m.color} ${currentDeg}deg ${currentDeg + deg}deg`);
+          currentDeg += deg;
+        });
+
+        // 填滿最後的剩餘度數，避免浮點數誤差
+        if (stops.length > 0) {
+          const lastStop = stops[stops.length - 1];
+          stops[stops.length - 1] = lastStop.replace(/\d+deg$/, '360deg');
+        }
+
+        const conicMeal = stops.length > 0 ? stops.join(', ') : `var(--c-surface) 0deg, var(--c-surface) 360deg`;
+
+        mealChart.innerHTML = `
+          <div class="donut-chart" style="background: conic-gradient(${conicMeal})"></div>
+          <div class="donut-text">
+            <span class="donut-cal">餐點</span>
+            <span class="donut-unit">分佈</span>
+          </div>
+        `;
 
         DOM.mealDetails.innerHTML = mealData.map(m => {
           const pct = t.calories > 0 ? Math.round(m.cal / t.calories * 100) : 0;
@@ -876,7 +912,7 @@
           </div>`;
         }).join('');
       } else {
-        DOM.mealBar.innerHTML = '';
+        mealChart.innerHTML = '';
         DOM.mealDetails.innerHTML = '';
       }
     },
