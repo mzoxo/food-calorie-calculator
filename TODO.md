@@ -10,10 +10,10 @@
 - [x] 初始化 Vite + Vue 3 專案（`package.json`、`vite.config.js`）
 - [x] 設定 Vue Router（hash mode，`/` 和 `/login`）
 - [x] 建立 `src/` 目錄結構（views、components、store、utils）
-- [ ] 把舊檔案（`index.html`、`app.js`、`style.css`）移到 `_old/` 備用
-- [ ] 把 `foods.json` 移至 `public/`
-- [ ] 建立 `src/style.css`（沿用舊 CSS，補新樣式）
-- [ ] 安裝 `lucide-vue-next`（取代 CDN）
+- [x] 把舊檔案（`index.html`、`app.js`、`style.css`）移到 `_old/` 備用
+- [x] 把 `foods.json` 移至 `public/`
+- [x] 建立 `src/style.css`（沿用舊 CSS，補新樣式）
+- [x] 安裝 `lucide-vue-next`（取代 CDN）
 
 ---
 
