@@ -767,7 +767,7 @@
       DOM.groupItems.innerHTML = items.map((it, i) => {
         const n = Calc.compute(it.food, it.quantity, it.mode);
         const name = it.food['名稱'] || '';
-        const detail = it.mode === 'gram' ? `${n.grams}g` : `${it.quantity}份 (${n.grams}g)`;
+        const detail = it.mode === 'gram' ? `${n.grams}g` : `${it.quantity}份`;
         return `<div class="food-item" data-idx="${i}">
           <div class="food-item-info">
             <div class="food-item-name">${name}</div>
@@ -1153,7 +1153,7 @@
               html += `<div class="import-record-item">
                 <div class="import-record-info">
                   <div class="import-record-name">${name}</div>
-                  <div class="import-record-detail">${qty}${unit} · 碳${r['碳水'] || 0} 蛋${r['蛋白質'] || 0} 脂${r['脂肪'] || 0}</div>
+                  <div class="import-record-detail">${qty}${unit} · 碳${r['碳水'] || 0} 蛋${r['蛋白質'] || 0} 脂${r['脂肪'] || 0} 纖${r['纖維'] || 0}</div>
                 </div>
                 <div class="import-record-cal">${cal} kcal</div>
               </div>`;
@@ -1210,6 +1210,7 @@
           const protein = parseFloat(r['蛋白質']) || 0;
           const fat = parseFloat(r['脂肪']) || 0;
           const carb = parseFloat(r['碳水']) || 0;
+          const fiber = parseFloat(r['纖維']) || 0;
           const qty = parseFloat(r['份量']) || 1;
 
           food = {
@@ -1222,12 +1223,12 @@
             '每份碳水': carb,
             '每份脂肪': fat,
             '每份蛋白質': protein,
-            '每份膳食纖維': 0,
+            '每份膳食纖維': fiber,
             '每 100g 熱量': qty > 0 ? Math.round(cal / qty * 100 * 10) / 10 : 0,
             '每 100g 碳水': qty > 0 ? Math.round(carb / qty * 100 * 10) / 10 : 0,
             '每 100g 脂肪': qty > 0 ? Math.round(fat / qty * 100 * 10) / 10 : 0,
             '每 100g 蛋白質': qty > 0 ? Math.round(protein / qty * 100 * 10) / 10 : 0,
-            '每 100g 膳食纖維': 0,
+            '每 100g 膳食纖維': qty > 0 ? Math.round(fiber / qty * 100 * 10) / 10 : 0,
           };
           // 以 1 份匯入
           state.groups[meal].push({ food, quantity: 1, mode: 'serving' });
