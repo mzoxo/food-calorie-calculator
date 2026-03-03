@@ -22,7 +22,7 @@
 - [x] `src/store/index.js` — 全域 reactive state（foods、groups、groupOrder、activeGroup、presets、recent、userProfile、modal 狀態）
 - [x] `src/utils/calc.js` — 營養計算（compute、subtotal、total、BMR、TDEE、減脂目標）
 - [x] `src/utils/api.js` — API 呼叫（fetchFoods、fetchDefaultFoods、fetchDiet）
-- [ ] `src/utils/export.js` — 匯出文字產生
+- [x] `src/utils/export.js` — 匯出文字產生
 
 ---
 
