@@ -28,7 +28,7 @@
 
 ## Phase 3 — 主計算頁（CalcView）
 
-- [ ] `AppHeader.vue` — 標題 + 右上角選單按鈕
+- [x] `AppHeader.vue` — 標題 + 右上角選單按鈕
 - [ ] `AppMenu.vue` — 右上角下拉選單（新增群組、個人資料、重新整理、清除資料）
 - [ ] `SearchBox.vue` — 搜尋框 + 清除按鈕
 - [ ] `RecentFoods.vue` — 最近使用（chip 列表 + 編輯/刪除模式）
