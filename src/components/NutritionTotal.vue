@@ -1,0 +1,316 @@
+<template>
+  <section v-if="hasItems" class="section" style="margin-top:var(--gap-md);padding-top:var(--gap-lg);border-top:1px solid var(--c-border-light)">
+    <div class="section-header">
+      <h2 class="section-title">總計</h2>
+    </div>
+
+    <!-- BMR / TDEE 進度條 -->
+    <div v-if="bmr" class="bmr-panel">
+      <div class="bmr-row">
+        <span class="bmr-label">基礎代謝 BMR</span>
+        <span class="bmr-value">{{ bmr }} kcal</span>
+      </div>
+      <div class="bmr-track">
+        <div class="bmr-bar bmr-bar--bmr" :style="{ width: barPct(bmr) }" />
+        <div class="bmr-marker" :style="{ left: barPct(bmr) }" title="BMR" />
+      </div>
+
+      <div class="bmr-row" style="margin-top:var(--gap-xs)">
+        <span class="bmr-label">目標熱量</span>
+        <span class="bmr-value">{{ target }} kcal</span>
+      </div>
+      <div class="bmr-row">
+        <span class="bmr-label">TDEE</span>
+        <span class="bmr-value">{{ tdee }} kcal</span>
+      </div>
+
+      <!-- 主進度條：今日攝取 vs TDEE -->
+      <div class="bmr-track" style="margin-top:4px">
+        <div
+          class="bmr-bar"
+          :class="intakeBarClass"
+          :style="{ width: barPct(tdee) }"
+        />
+        <!-- 今日攝取指針 -->
+        <div
+          class="bmr-needle"
+          :style="{ left: barPct(t.calories) }"
+          :title="`今日攝取 ${Math.round(t.calories)} kcal`"
+        />
+        <!-- 目標線 -->
+        <div class="bmr-target-line" :style="{ left: barPct(target) }" title="目標" />
+      </div>
+
+      <div class="bmr-intake-row">
+        <span class="bmr-intake-label">今日攝取</span>
+        <span class="bmr-intake-value" :class="intakeBarClass">
+          {{ Math.round(t.calories) }} kcal
+        </span>
+        <span class="bmr-diff">
+          {{ intakeDiffLabel }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 圓餅圖區 -->
+    <div class="total-donuts-wrapper">
+      <!-- 三大營養素 -->
+      <div class="total-content">
+        <div class="donut-container">
+          <div class="donut-chart" :style="{ background: macroConic }" />
+          <div class="donut-text">
+            <span class="donut-cal">{{ Math.round(t.calories) }}</span>
+            <span class="donut-unit">kcal</span>
+          </div>
+        </div>
+        <div class="macro-details">
+          <div class="macro-item">
+            <span class="macro-dot" style="background:var(--c-carb)" />
+            <span class="macro-label">碳水</span>
+            <span class="macro-value">{{ t.carb }}g</span>
+            <span class="macro-percent">{{ pct.carbPct }}%</span>
+          </div>
+          <div class="macro-item">
+            <span class="macro-dot" style="background:var(--c-protein)" />
+            <span class="macro-label">蛋白質</span>
+            <span class="macro-value">{{ t.protein }}g</span>
+            <span class="macro-percent">{{ pct.proteinPct }}%</span>
+          </div>
+          <div class="macro-item">
+            <span class="macro-dot" style="background:var(--c-fat)" />
+            <span class="macro-label">脂肪</span>
+            <span class="macro-value">{{ t.fat }}g</span>
+            <span class="macro-percent">{{ pct.fatPct }}%</span>
+          </div>
+          <div v-if="t.fiber > 0" class="macro-item">
+            <span class="macro-dot" style="background:var(--c-fiber)" />
+            <span class="macro-label">膳食纖維</span>
+            <span class="macro-value">{{ t.fiber }}g</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 餐次分佈 -->
+      <div class="total-content">
+        <div class="donut-container">
+          <div class="donut-chart" :style="{ background: mealConic }" />
+          <div class="donut-text">
+            <span class="donut-cal" style="font-size:0.75rem;font-weight:600">餐次</span>
+          </div>
+        </div>
+        <div class="macro-details">
+          <div v-for="meal in mealBreakdown" :key="meal.name" class="macro-item">
+            <span class="macro-dot" :style="{ background: meal.color }" />
+            <span class="macro-label">{{ meal.name }}</span>
+            <span class="macro-value">{{ Math.round(meal.calories) }}</span>
+            <span class="macro-percent">{{ meal.pct }}%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup>
+import { computed } from 'vue'
+import { store } from '../store/index.js'
+import { total, macroPct, subtotal, calcBMR, calcTDEE, calcTarget } from '../utils/calc.js'
+
+const MEAL_COLORS = ['#7C9EDE','#F4C454','#F08CA5','#8ECA99','#BCA0E6','#F4A674','#78C4CD','#D990B0']
+
+// ── 總計 ─────────────────────────────────────────────
+const t   = computed(() => total(store.groups))
+const pct = computed(() => macroPct(t.value))
+
+const hasItems = computed(() =>
+  Object.values(store.groups).some(g => g.length > 0)
+)
+
+// ── BMR / TDEE ────────────────────────────────────────
+const bmr    = computed(() => store.userProfile ? calcBMR(store.userProfile)    : null)
+const tdee   = computed(() => bmr.value          ? calcTDEE(bmr.value, store.userProfile.activityLevel) : null)
+const target = computed(() => tdee.value         ? calcTarget(tdee.value)       : null)
+
+const maxCal = computed(() => tdee.value ? tdee.value * 1.1 : null)
+
+function barPct(cal) {
+  if (!maxCal.value || !cal) return '0%'
+  return `${Math.min(100, cal / maxCal.value * 100).toFixed(1)}%`
+}
+
+const intakeBarClass = computed(() => {
+  if (!t.value.calories) return ''
+  if (t.value.calories > tdee.value)   return 'over-tdee'
+  if (t.value.calories > target.value) return 'over-target'
+  return 'under-target'
+})
+
+const intakeDiffLabel = computed(() => {
+  if (!target.value) return ''
+  const diff = Math.round(t.value.calories - target.value)
+  return diff > 0 ? `超出目標 ${diff} kcal` : `距目標還差 ${Math.abs(diff)} kcal`
+})
+
+// ── 三大營養素圓餅圖 ──────────────────────────────────
+const macroConic = computed(() => {
+  const { carbPct, proteinPct, fatPct } = pct.value
+  if (!carbPct && !proteinPct && !fatPct)
+    return 'var(--c-surface)'
+  const d1 = carbPct * 3.6
+  const d2 = d1 + proteinPct * 3.6
+  return `conic-gradient(var(--c-carb) 0deg ${d1}deg, var(--c-protein) ${d1}deg ${d2}deg, var(--c-fat) ${d2}deg 360deg)`
+})
+
+// ── 餐次圓餅圖 ────────────────────────────────────────
+const mealBreakdown = computed(() => {
+  const totalCal = t.value.calories || 1
+  return store.groupOrder
+    .map((name, i) => {
+      const items = store.groups[name] || []
+      if (!items.length) return null
+      const cal = subtotal(items).calories
+      return {
+        name,
+        calories: cal,
+        pct: Math.round(cal / totalCal * 100),
+        color: MEAL_COLORS[i % MEAL_COLORS.length],
+      }
+    })
+    .filter(Boolean)
+})
+
+const mealConic = computed(() => {
+  if (!mealBreakdown.value.length) return 'var(--c-surface)'
+  let angle = 0
+  const stops = mealBreakdown.value.map(m => {
+    const deg = m.pct * 3.6
+    const stop = `${m.color} ${angle}deg ${angle + deg}deg`
+    angle += deg
+    return stop
+  })
+  return `conic-gradient(${stops.join(', ')})`
+})
+</script>
+
+<style scoped>
+/* BMR Panel */
+.bmr-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--gap-sm) var(--gap-md);
+  background: var(--c-surface);
+  border-radius: var(--radius);
+  margin-bottom: var(--gap-sm);
+}
+
+.bmr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.75rem;
+}
+
+.bmr-label { color: var(--c-text-muted); }
+.bmr-value { font-weight: 600; color: var(--c-text-secondary); }
+
+.bmr-track {
+  position: relative;
+  height: 6px;
+  background: var(--c-border);
+  border-radius: 99px;
+  overflow: visible;
+}
+
+.bmr-bar {
+  height: 100%;
+  border-radius: 99px;
+  background: var(--c-primary);
+  transition: width 0.4s var(--ease);
+}
+
+.bmr-bar.over-tdee   { background: var(--c-danger); }
+.bmr-bar.over-target { background: #F4A674; }
+.bmr-bar.under-target { background: var(--c-primary); }
+
+.bmr-marker {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  background: var(--c-text-muted);
+  border-radius: 1px;
+  transform: translateX(-50%);
+}
+
+.bmr-needle {
+  position: absolute;
+  top: -4px;
+  width: 3px;
+  height: 14px;
+  background: var(--c-text);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  transition: left 0.4s var(--ease);
+}
+
+.bmr-target-line {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 12px;
+  background: var(--c-primary);
+  border-radius: 1px;
+  transform: translateX(-50%);
+  opacity: 0.5;
+}
+
+.bmr-intake-row {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-size: 0.75rem;
+  margin-top: 2px;
+}
+
+.bmr-intake-label { color: var(--c-text-muted); }
+
+.bmr-intake-value {
+  font-weight: 700;
+  color: var(--c-primary);
+}
+.bmr-intake-value.over-tdee   { color: var(--c-danger); }
+.bmr-intake-value.over-target { color: #F4A674; }
+
+.bmr-diff {
+  color: var(--c-text-muted);
+  font-size: 0.72rem;
+  margin-left: auto;
+}
+
+/* Donut 內圈 */
+.donut-chart {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  position: relative;
+}
+
+.donut-chart::before {
+  content: '';
+  position: absolute;
+  inset: 12px;
+  background: var(--c-bg);
+  border-radius: 50%;
+}
+
+.donut-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+</style>
