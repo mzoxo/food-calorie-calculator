@@ -49,9 +49,9 @@
 - [ ] `ImportModal.vue` — 匯入飲食記錄（日期查詢 + 確認匯入）
 - [ ] `ExportModal.vue` — 匯出文字 + 複製
 - [ ] `ProfileModal.vue` — 個人資料（年齡、身高、體重、運動習慣五級、減脂目標）
-- [ ] `ConfirmModal.vue` — 通用確認對話框
-- [ ] `InputModal.vue` — 通用輸入對話框
-- [ ] `Toast.vue` — 底部提示訊息
+- [x] `ConfirmModal.vue` — 通用確認對話框
+- [x] `InputModal.vue` — 通用輸入對話框
+- [x] `Toast.vue` — 底部提示訊息
 
 ---
 
