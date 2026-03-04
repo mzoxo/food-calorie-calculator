@@ -48,7 +48,7 @@
 - [x] `PresetUseModal.vue` — 使用組合預覽（含階層加入）
 - [x] `ImportModal.vue` — 匯入飲食記錄（日期查詢 + 確認匯入）
 - [x] `ExportModal.vue` — 匯出文字 + 複製
-- [ ] `ProfileModal.vue` — 個人資料（年齡、身高、體重、運動習慣五級、減脂目標）
+- [x] `ProfileModal.vue` — 個人資料（年齡、身高、體重、運動習慣五級、減脂目標）
 - [x] `ConfirmModal.vue` — 通用確認對話框
 - [x] `InputModal.vue` — 通用輸入對話框
 - [x] `Toast.vue` — 底部提示訊息
@@ -57,7 +57,7 @@
 
 ## Phase 5 — 設定頁（LoginView）
 
-- [ ] `LoginView.vue` — API URL + Token 輸入、儲存、返回首頁
+- [x] `LoginView.vue` — API URL + Token 輸入、儲存、返回首頁
   - 路由 `/login`，不從任何 UI 連結，只有知道網址的人能進入
 
 ---
