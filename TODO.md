@@ -36,7 +36,7 @@
 - [x] `GroupItems.vue` — 群組食材列表（含組合階層邏輯）
 - [x] `FoodItem.vue` — 單筆食材（名稱、detail、熱量、刪除、備註折疊顯示/編輯）
 - [x] `NutritionTotal.vue` — 總計區塊（BMR/TDEE 進度條 + 兩個圓餅圖）
-- [ ] `CalcView.vue` — 組合以上元件 + Footer 按鈕列
+- [x] `CalcView.vue` — 組合以上元件 + Footer 按鈕列
 
 ---
 
