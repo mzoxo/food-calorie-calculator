@@ -38,9 +38,9 @@
 
   <!-- ── Modals ── -->
   <AddFoodModal />
-  <!-- <PresetsModal /> -->
-  <!-- <PresetSaveModal /> -->
-  <!-- <PresetUseModal /> -->
+  <PresetsModal />
+  <PresetSaveModal />
+  <PresetUseModal />
   <!-- <ImportModal /> -->
   <!-- <ExportModal /> -->
   <!-- <ProfileModal /> -->
@@ -55,7 +55,10 @@ import RecentFoods    from '../components/RecentFoods.vue'
 import GroupTabs      from '../components/GroupTabs.vue'
 import GroupItems     from '../components/GroupItems.vue'
 import NutritionTotal from '../components/NutritionTotal.vue'
-import AddFoodModal   from '../components/modals/AddFoodModal.vue'
+import AddFoodModal    from '../components/modals/AddFoodModal.vue'
+import PresetsModal    from '../components/modals/PresetsModal.vue'
+import PresetSaveModal from '../components/modals/PresetSaveModal.vue'
+import PresetUseModal  from '../components/modals/PresetUseModal.vue'
 
 import { store, loadState, loadRecent, loadPresets, loadUserProfile, clearAll, saveState, showConfirm, initDefaultGroups } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
