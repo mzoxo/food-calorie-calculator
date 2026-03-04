@@ -36,17 +36,14 @@
     <button class="btn btn-outline" @click="onClearCurrent">清除計算</button>
   </footer>
 
-  <!-- ── Modals（Phase 4 實作） ── -->
-  <!-- <AddFoodModal /> -->
+  <!-- ── Modals ── -->
+  <AddFoodModal />
   <!-- <PresetsModal /> -->
   <!-- <PresetSaveModal /> -->
   <!-- <PresetUseModal /> -->
   <!-- <ImportModal /> -->
   <!-- <ExportModal /> -->
   <!-- <ProfileModal /> -->
-  <!-- <ConfirmModal /> -->
-  <!-- <InputModal /> -->
-  <!-- <Toast /> -->
 </template>
 
 <script setup>
@@ -58,6 +55,7 @@ import RecentFoods    from '../components/RecentFoods.vue'
 import GroupTabs      from '../components/GroupTabs.vue'
 import GroupItems     from '../components/GroupItems.vue'
 import NutritionTotal from '../components/NutritionTotal.vue'
+import AddFoodModal   from '../components/modals/AddFoodModal.vue'
 
 import { store, loadState, loadRecent, loadPresets, loadUserProfile, clearAll, saveState, showConfirm, initDefaultGroups } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'

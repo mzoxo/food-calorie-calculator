@@ -42,7 +42,7 @@
 
 ## Phase 4 — 彈窗元件
 
-- [ ] `AddFoodModal.vue` — 加入食材（克數/份數切換、+/−、即時預覽、選群組）
+- [x] `AddFoodModal.vue` — 加入食材（克數/份數切換、+/−、即時預覽、選群組）
 - [ ] `PresetsModal.vue` — 常用組合列表（使用、刪除）
 - [ ] `PresetSaveModal.vue` — 儲存組合（名稱、份數分割、預覽）
 - [ ] `PresetUseModal.vue` — 使用組合預覽（含階層加入）
