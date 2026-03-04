@@ -41,8 +41,8 @@
   <PresetsModal />
   <PresetSaveModal />
   <PresetUseModal />
-  <!-- <ImportModal /> -->
-  <!-- <ExportModal /> -->
+  <ImportModal />
+  <ExportModal />
   <!-- <ProfileModal /> -->
 </template>
 
@@ -59,6 +59,8 @@ import AddFoodModal    from '../components/modals/AddFoodModal.vue'
 import PresetsModal    from '../components/modals/PresetsModal.vue'
 import PresetSaveModal from '../components/modals/PresetSaveModal.vue'
 import PresetUseModal  from '../components/modals/PresetUseModal.vue'
+import ImportModal     from '../components/modals/ImportModal.vue'
+import ExportModal     from '../components/modals/ExportModal.vue'
 
 import { store, loadState, loadRecent, loadPresets, loadUserProfile, clearAll, saveState, showConfirm, initDefaultGroups } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
