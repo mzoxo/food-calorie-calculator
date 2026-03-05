@@ -19,11 +19,11 @@
         <div class="menu-divider" />
         <button class="menu-item" @click="emit('clear-current')">
           <Eraser :size="15" :stroke-width="1.5" />
-          清除當前計算
+          清除所有群組
         </button>
         <button class="menu-item danger" @click="emit('clear-all')">
           <Trash2 :size="15" :stroke-width="1.5" />
-          清除所有資料
+          重設
         </button>
       </div>
     </transition>

@@ -21,7 +21,7 @@
           <div v-if="preview" class="nutrition-preview">
             <div class="nutrition-preview-item">
               <span class="nutrition-preview-label">熱量</span>
-              <span class="nutrition-preview-value">{{ Math.round(preview.calories) }} kcal</span>
+              <span class="nutrition-preview-value">{{ fmt(preview.calories) }} kcal</span>
             </div>
             <div class="nutrition-preview-item">
               <span class="nutrition-preview-label">碳水</span>
@@ -34,6 +34,10 @@
             <div class="nutrition-preview-item">
               <span class="nutrition-preview-label">脂肪</span>
               <span class="nutrition-preview-value">{{ preview.fat }}g</span>
+            </div>
+            <div v-if="preview.fiber > 0" class="nutrition-preview-item">
+              <span class="nutrition-preview-label">膳食纖維</span>
+              <span class="nutrition-preview-value">{{ preview.fiber }}g</span>
             </div>
           </div>
 
@@ -56,7 +60,7 @@
 import { ref, computed, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import { store, addFoodToGroup, showToast } from '../../store/index.js'
-import { compute, subtotal } from '../../utils/calc.js'
+import { compute, subtotal, fmt } from '../../utils/calc.js'
 
 const modal         = store.modal
 const selectedGroup = ref('')
@@ -90,6 +94,7 @@ function confirm() {
     addFoodToGroup(item.food, item.quantity, item.mode, selectedGroup.value, {
       presetName: preset.value.name,
       presetId,
+      note: item.note || '',
     })
   })
   showToast(`已加入「${preset.value.name}」`)

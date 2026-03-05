@@ -24,9 +24,9 @@ export function generateExport(groups, groupOrder) {
     }
 
     const s = subtotal(items)
-    lines.push(
-      `小計：${Math.round(s.calories)} kcal | 碳水 ${s.carb}g | 蛋白質 ${s.protein}g | 脂肪 ${s.fat}g`
-    )
+    let subLine = `小計：${Math.round(s.calories)} kcal | 碳水 ${s.carb}g | 蛋白質 ${s.protein}g | 脂肪 ${s.fat}g`
+    if (s.fiber > 0) subLine += ` | 膳食纖維 ${s.fiber}g`
+    lines.push(subLine)
     lines.push('')
   }
 

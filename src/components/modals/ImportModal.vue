@@ -31,16 +31,15 @@
                     <div class="import-record-name">{{ rec['食品名稱'] }}</div>
                     <div class="import-record-detail">
                       {{ rec['份量'] }}{{ rec['單位'] }} · 碳{{ rec['碳水'] || 0 }} 蛋{{ rec['蛋白質'] || 0 }} 脂{{ rec['脂肪'] || 0 }}<span v-if="rec['纖維']"> 纖{{ rec['纖維'] }}</span>
-                      <span v-if="rec['matched']" class="import-matched-tag">已比對</span>
                     </div>
                     <div v-if="rec['備註']" class="import-record-note">{{ rec['備註'] }}</div>
                   </div>
-                  <span class="import-record-cal">{{ rec['熱量'] }} kcal</span>
+                  <span class="import-record-cal">{{ fmt(rec['熱量']) }} kcal</span>
                 </div>
               </div>
 
               <div class="import-total">
-                共 {{ records.length }} 筆 · 總計 {{ totalCal }} kcal
+                共 {{ records.length }} 筆 · 總計 {{ fmt(totalCal) }} kcal
               </div>
             </div>
 
@@ -51,6 +50,10 @@
 
         <!-- 固定底部按鈕 -->
         <div v-if="records.length" class="import-footer">
+          <label class="import-clear-option">
+            <input v-model="clearBeforeImport" type="checkbox" />
+            匯入前清空當前資料
+          </label>
           <button class="btn btn-primary btn-block" @click="confirmImport">確認匯入</button>
         </div>
       </div>
@@ -63,12 +66,14 @@ import { ref, computed, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import { store, addFoodToGroup, showToast, saveState, ensureGroup } from '../../store/index.js'
 import { fetchDiet } from '../../utils/api.js'
+import { fmt } from '../../utils/calc.js'
 
 const modal   = store.modal
-const date    = ref('')
-const records = ref([])
-const loading = ref(false)
-const queried = ref(false)
+const date             = ref('')
+const records          = ref([])
+const loading          = ref(false)
+const queried          = ref(false)
+const clearBeforeImport = ref(false)
 
 // 預設今天
 watch(() => modal.import.visible, (v) => {
@@ -116,6 +121,10 @@ async function query() {
 }
 
 function confirmImport() {
+  if (clearBeforeImport.value) {
+    store.groupOrder.forEach(g => { store.groups[g] = [] })
+  }
+
   records.value.forEach(rec => {
     const meal = rec['餐別'] || '其他'
     // 確保群組存在
@@ -194,5 +203,17 @@ function close() { modal.import.visible = false }
   padding: var(--gap-md) var(--gap-lg);
   border-top: 1px solid var(--c-border-light);
   background: var(--c-bg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-sm);
+}
+
+.import-clear-option {
+  display: flex;
+  align-items: center;
+  gap: var(--gap-sm);
+  font-size: 0.82rem;
+  color: var(--c-text-secondary);
+  cursor: pointer;
 }
 </style>

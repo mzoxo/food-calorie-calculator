@@ -71,10 +71,6 @@
               <span class="nutrition-preview-label">膳食纖維</span>
               <span class="nutrition-preview-value">{{ n.fiber }}g</span>
             </div>
-            <div v-if="mode === 'gram'" class="nutrition-preview-item">
-              <span class="nutrition-preview-label">重量</span>
-              <span class="nutrition-preview-value">{{ n.grams }}g</span>
-            </div>
           </div>
 
           <!-- 備註 -->

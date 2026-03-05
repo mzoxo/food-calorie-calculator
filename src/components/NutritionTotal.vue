@@ -11,31 +11,28 @@
           <span class="bmr-label">BMR</span>
           <span class="bmr-value">{{ fmt(bmr) }}</span>
         </span>
-        <span class="bmr-inline-item">
-          <span class="bmr-label">TDEE</span>
-          <span class="bmr-value">{{ fmt(tdee) }}</span>
-        </span>
-        <span class="bmr-inline-item">
-          <span class="bmr-label">目標</span>
-          <span class="bmr-value">{{ fmt(target) }}</span>
+        <span class="bmr-inline-right">
+          <span class="bmr-inline-item">
+            <span class="bmr-label">目標</span>
+            <span class="bmr-value">{{ fmt(target) }}</span>
+          </span>
+          <span class="bmr-inline-item">
+            <span class="bmr-label">TDEE</span>
+            <span class="bmr-value">{{ fmt(tdee) }}</span>
+          </span>
         </span>
       </div>
 
       <!-- 主進度條：今日攝取 vs TDEE -->
       <div class="bmr-track" style="margin-top:4px">
+        <!-- 填充條 = 今日攝取，上限 100%（TDEE） -->
         <div
           class="bmr-bar"
           :class="intakeBarClass"
-          :style="{ width: barPct(tdee) }"
-        />
-        <!-- 今日攝取指針 -->
-        <div
-          class="bmr-needle"
-          :style="{ left: barPct(t.calories) }"
-          :title="`今日攝取 ${fmt(t.calories)} kcal`"
+          :style="{ width: intakePct }"
         />
         <!-- 目標線 -->
-        <div class="bmr-target-line" :style="{ left: barPct(target) }" title="目標" />
+        <div class="bmr-target-line" :style="{ left: targetPct }" title="目標" />
       </div>
 
       <div class="bmr-intake-row">
@@ -83,6 +80,7 @@
             <span class="macro-dot" style="background:var(--c-fiber)" />
             <span class="macro-label">膳食纖維</span>
             <span class="macro-value">{{ t.fiber }}g</span>
+            <span class="macro-percent" />
           </div>
         </div>
       </div>
@@ -124,12 +122,17 @@ const bmr    = computed(() => store.userProfile ? calcBMR(store.userProfile)    
 const tdee   = computed(() => bmr.value          ? calcTDEE(bmr.value, store.userProfile.activityLevel) : null)
 const target = computed(() => tdee.value         ? calcTarget(tdee.value)       : null)
 
-const maxCal = computed(() => tdee.value ? tdee.value * 1.1 : null)
+// 填充條：攝取 / TDEE，超過 cap 在 100%
+const intakePct = computed(() => {
+  if (!tdee.value) return '0%'
+  return `${Math.min(100, t.value.calories / tdee.value * 100).toFixed(1)}%`
+})
 
-function barPct(cal) {
-  if (!maxCal.value || !cal) return '0%'
-  return `${Math.min(100, cal / maxCal.value * 100).toFixed(1)}%`
-}
+// 目標線位置：target / TDEE
+const targetPct = computed(() => {
+  if (!tdee.value || !target.value) return '0%'
+  return `${(target.value / tdee.value * 100).toFixed(1)}%`
+})
 
 const intakeBarClass = computed(() => {
   if (!t.value.calories) return ''
@@ -206,8 +209,13 @@ const mealConic = computed(() => {
 
 .bmr-inline-row {
   display: flex;
-  gap: var(--gap-md);
+  justify-content: space-between;
   font-size: 0.75rem;
+}
+
+.bmr-inline-right {
+  display: flex;
+  gap: var(--gap-md);
 }
 
 .bmr-inline-item {
@@ -248,16 +256,6 @@ const mealConic = computed(() => {
   transform: translateX(-50%);
 }
 
-.bmr-needle {
-  position: absolute;
-  top: -4px;
-  width: 3px;
-  height: 14px;
-  background: var(--c-text);
-  border-radius: 1px;
-  transform: translateX(-50%);
-  transition: left 0.4s var(--ease);
-}
 
 .bmr-target-line {
   position: absolute;

@@ -48,18 +48,23 @@
 
     <!-- 小計 -->
     <div v-if="items.length" class="subtotal">
-      <span class="subtotal-item">熱量 <span class="subtotal-value">{{ fmt(sub.calories) }} kcal</span></span>
-      <span class="subtotal-item">碳水 <span class="subtotal-value">{{ sub.carb }}g</span></span>
-      <span class="subtotal-item">蛋白質 <span class="subtotal-value">{{ sub.protein }}g</span></span>
-      <span class="subtotal-item">脂肪 <span class="subtotal-value">{{ sub.fat }}g</span></span>
-      <span v-if="sub.fiber > 0" class="subtotal-item">膳食纖維 <span class="subtotal-value">{{ sub.fiber }}g</span></span>
+      <div class="subtotal-nums">
+        <span class="subtotal-item">熱量 <span class="subtotal-value">{{ fmt(sub.calories) }} kcal</span></span>
+        <span class="subtotal-item">碳水 <span class="subtotal-value">{{ sub.carb }}g</span></span>
+        <span class="subtotal-item">蛋白質 <span class="subtotal-value">{{ sub.protein }}g</span></span>
+        <span class="subtotal-item">脂肪 <span class="subtotal-value">{{ sub.fat }}g</span></span>
+        <span v-if="sub.fiber > 0" class="subtotal-item">膳食纖維 <span class="subtotal-value">{{ sub.fiber }}g</span></span>
+      </div>
+      <button class="icon-btn subtotal-clear" title="清空此群組食材" @click="clearGroup">
+        <Trash2 :size="13" :stroke-width="1.5" />
+      </button>
     </div>
   </section>
 </template>
 
 <script setup>
 import { computed, reactive } from 'vue'
-import { ChevronDown, ChevronRight, X } from 'lucide-vue-next'
+import { ChevronDown, ChevronRight, X, Trash2 } from 'lucide-vue-next'
 import FoodItem from './FoodItem.vue'
 import { store, removeFoodFromGroup, saveState } from '../store/index.js'
 import { subtotal, fmt } from '../utils/calc.js'
@@ -111,6 +116,11 @@ function removeItem(index) {
   removeFoodFromGroup(store.activeGroup, index)
 }
 
+function clearGroup() {
+  store.groups[store.activeGroup] = []
+  saveState()
+}
+
 function openEdit(groupName, index) {
   const item = store.groups[groupName]?.[index]
   if (!item) return
@@ -131,6 +141,32 @@ function removePresetBlock(block) {
 </script>
 
 <style scoped>
+.subtotal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subtotal-nums {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-sm);
+}
+
+.subtotal-clear {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  min-height: 28px;
+  opacity: 0.5;
+  transition: all var(--duration) var(--ease);
+}
+
+.subtotal-clear:hover {
+  opacity: 1;
+}
+
 .preset-block {
   border: 1px solid var(--c-border-light);
   border-radius: var(--radius);
@@ -180,6 +216,7 @@ function removePresetBlock(block) {
 .preset-block-items {
   padding: 0 var(--gap-sm);
 }
+
 
 .preset-item {
   padding-left: var(--gap-md);

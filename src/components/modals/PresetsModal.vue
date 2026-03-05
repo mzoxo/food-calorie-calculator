@@ -45,7 +45,11 @@
 
           <!-- 儲存目前群組 -->
           <div class="presets-actions">
-            <button class="btn btn-primary btn-block" @click="openSave">
+            <button
+              class="btn btn-primary btn-block"
+              :disabled="!store.groups[store.activeGroup]?.length"
+              @click="openSave"
+            >
               將目前群組儲存為常用組合
             </button>
           </div>

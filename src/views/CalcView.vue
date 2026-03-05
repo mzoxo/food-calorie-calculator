@@ -1,6 +1,6 @@
 <template>
   <!-- Header -->
-  <AppHeader @refresh="onRefresh" @menu="onMenuToggle" />
+  <AppHeader @menu="onMenuToggle" />
 
   <!-- 右上角選單 -->
   <AppMenu
@@ -100,7 +100,7 @@ async function onRefresh() {
 // ── 清除 ──────────────────────────────────────────────
 async function onClearCurrent() {
   menuVisible.value = false
-  const ok = await showConfirm('清除目前所有群組的食材？')
+  const ok = await showConfirm('清除所有群組的食材？')
   if (!ok) return
   store.groupOrder.forEach(g => { store.groups[g] = [] })
   saveState()

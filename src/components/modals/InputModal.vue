@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div v-if="modal.input.visible" class="overlay" @click.self="resolve(null)">
+    <div v-if="modal.input.visible" class="overlay" style="z-index:150" @click.self="resolve(null)">
       <div class="modal">
         <div class="modal-header">
           <h2>{{ modal.input.title }}</h2>

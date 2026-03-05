@@ -589,9 +589,12 @@ select.input {
 
 .qty-input {
     width: 80px;
+    height: 36px;
     text-align: center;
     font-size: 1.1rem;
     font-weight: 600;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .qty-unit {
@@ -613,15 +616,20 @@ select.input {
 .nutrition-preview-item {
     display: flex;
     justify-content: space-between;
+    gap: var(--gap-sm);
+    min-width: 0;
 }
 
 .nutrition-preview-label {
     color: var(--c-text-muted);
     font-weight: 500;
+    min-width: 0;
 }
 
 .nutrition-preview-value {
     font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 /* ===== Tabs ===== */
@@ -699,7 +707,8 @@ select.input {
     transition: opacity var(--duration) var(--ease);
 }
 
-.food-item:last-child {
+.food-item:last-child,
+.food-item:has(+ .preset-block) {
     border-bottom: none;
 }
 
@@ -726,6 +735,7 @@ select.input {
     font-size: 0.8rem;
     font-weight: 600;
     white-space: nowrap;
+    flex-shrink: 0;
     color: var(--c-text-secondary);
 }
 
@@ -742,10 +752,6 @@ select.input {
     opacity: 1;
 }
 
-.food-item-remove:hover {
-    color: var(--c-danger);
-    opacity: 1;
-}
 
 /* ===== Subtotal ===== */
 .subtotal {
@@ -1024,17 +1030,6 @@ select.input {
     opacity: 0.8;
 }
 
-.import-matched-tag {
-    display: inline-block;
-    margin-left: 4px;
-    font-size: 0.68rem;
-    color: var(--c-primary);
-    border: 1px solid var(--c-primary);
-    border-radius: 3px;
-    padding: 0 3px;
-    opacity: 0.8;
-    vertical-align: middle;
-}
 
 .import-record-cal {
     font-size: 0.8rem;
@@ -1113,8 +1108,4 @@ select.input {
         width: 100%;
     }
 
-
-    .nutrition-preview {
-        grid-template-columns: repeat(3, 1fr);
-    }
 }
