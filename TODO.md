@@ -64,22 +64,22 @@
 
 ## Phase 6 — 新功能實作
 
-- [ ] **BMR/TDEE 進度條**
+- [x] **BMR/TDEE 進度條**
   - Mifflin-St Jeor 公式計算 BMR
   - 五級活動係數（久坐 1.2 / 輕度 1.375 / 中度 1.55 / 高度 1.725 / 極高 1.9）
   - 減脂目標 = TDEE × 0.9（略低於 TDEE）
   - 顯示於總計區塊：今日攝取 vs BMR vs TDEE 進度條
-- [ ] **食材備註**
+- [x] **食材備註**
   - 群組 items 資料結構加 `note` 欄位
-  - FoodItem 預設折疊，點擊展開顯示備註
-  - 點擊備註可編輯（inline 或 modal）
-- [ ] **組合階層顯示**
+  - FoodItem 顯示備註（有才顯示），鉛筆按鈕開啟 AddFoodModal 編輯模式
+  - AddFoodModal editMode：預填克數/份數/備註，儲存更改
+- [x] **組合階層顯示**
   - items 加 `presetName` + `presetId` tag
   - GroupItems 依 presetId 聚合，組合名稱縮排顯示為標題列
   - 支援折疊/展開組合內食材
   - 可個別刪除組合內食材，或整組刪除
-- [ ] **新增群組移到右上角選單**
-- [ ] **群組 Tab 更名/刪除**：保留右鍵或長按 context menu
+- [x] **新增群組移到右上角選單**
+- [x] **群組 Tab 更名/刪除**：右鍵或長按 context menu
 
 ---
 
