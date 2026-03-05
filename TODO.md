@@ -85,9 +85,9 @@
 
 ## Phase 7 — 收尾
 
-- [ ] GitHub Pages 部署設定（`vite.config.js` base path）
+- [x] GitHub Pages 部署設定（GitHub Actions workflow，`vite.config.js` base `'./'`）
 - [ ] 全功能測試（搜尋、計算、localStorage、API 呼叫、匯入匯出）
-- [ ] 更新 `Requirements.md`
+- [x] 更新 `Requirements.md`
 
 ---
 
