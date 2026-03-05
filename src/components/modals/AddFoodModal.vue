@@ -123,9 +123,10 @@ watch(() => modal.addFood.visible, (v) => {
     note.value     = item?.note     ?? ''
   } else {
     mode.value          = 'gram'
-    quantity.value      = 100
+    quantity.value      = modal.addFood.initQuantity ?? 100
     note.value          = ''
     selectedGroup.value = store.activeGroup
+    modal.addFood.initQuantity = null
   }
 })
 
