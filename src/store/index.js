@@ -34,7 +34,7 @@ export const store = reactive({
 
   // Modal 開關狀態
   modal: {
-    addFood:    { visible: false, food: null, editMode: false, groupName: '', index: -1, note: '' },
+    addFood:    { visible: false, food: null, editMode: false, groupName: '', index: -1, note: '', initQuantity: null },
     presets:    { visible: false },
     presetSave: { visible: false },
     presetUse:  { visible: false, preset: null, qty: 1 },

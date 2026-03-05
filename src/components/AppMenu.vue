@@ -11,6 +11,10 @@
           <Plus :size="15" :stroke-width="1.5" />
           新增群組
         </button>
+        <button class="menu-item" @click="goToFoods">
+          <Database :size="15" :stroke-width="1.5" />
+          食材資料庫
+        </button>
         <div class="menu-divider" />
         <button class="menu-item" @click="emit('refresh')">
           <RefreshCw :size="15" :stroke-width="1.5" />
@@ -28,10 +32,12 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Plus, User, RefreshCw, Eraser, Trash2 } from 'lucide-vue-next'
+import { Plus, User, RefreshCw, Eraser, Trash2, Database } from 'lucide-vue-next'
+import { useRouter } from 'vue-router'
 import { store, showPrompt, showToast, saveState, initDefaultGroups } from '../store/index.js'
 
 const props = defineProps({ visible: Boolean, anchor: Object })
+const router = useRouter()
 
 const menuStyle = computed(() => {
   if (!props.anchor) return {}
@@ -41,6 +47,11 @@ const menuStyle = computed(() => {
   }
 })
 const emit  = defineEmits(['close', 'open-profile', 'refresh', 'clear-all'])
+
+function goToFoods() {
+  emit('close')
+  router.push('/foods')
+}
 
 async function onAddGroup() {
   emit('close')
