@@ -1211,10 +1211,10 @@ select.input {
 .foods-table-wrap {
     flex: 1;
     background: var(--c-bg);
-    padding-bottom: 80px;
 }
 
 .foods-status-notice {
+    min-height: calc(100dvh - 49px - 80px); /* viewport - header - toolbar */
     padding: var(--gap-lg);
     color: var(--c-text-muted);
     font-size: 0.85rem;
@@ -1236,7 +1236,7 @@ select.input {
 .foods-table-scroll {
     overflow-x: auto;
     overflow-y: auto;
-    max-height: calc(100svh - 180px);
+    height: calc(100svh - 160px); /* 49px header + ~80px toolbar + ~30px count-row */
 }
 
 .foods-table {
@@ -1482,6 +1482,7 @@ select.input {
     .footer,
     .foods-toolbar,
     .foods-table-wrap,
+    .foods-status-notice,
     .compare-bar {
         max-width: 500px;
         margin-left: auto;

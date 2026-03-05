@@ -48,6 +48,7 @@
   <!-- 表格 -->
   <FoodTable
     v-else
+    :style="compareMode ? 'padding-bottom: 80px' : ''"
     :foods="filteredFoods"
     :sort-field="sortField"
     :sort-dir="sortDir"
