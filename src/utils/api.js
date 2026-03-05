@@ -78,5 +78,5 @@ export async function fetchDiet(date) {
   if (!res.ok) throw new Error(`API error: ${res.status}`)
   const json = await res.json()
   if (json.error) throw new Error(json.error)
-  return json
+  return json.records || []
 }

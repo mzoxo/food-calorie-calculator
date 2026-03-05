@@ -12,10 +12,7 @@
         @touchend="onTouchEnd"
         @touchmove="onTouchEnd"
       >
-        {{ name }}
-        <span v-if="store.groups[name]?.length" class="tab-count">
-          {{ store.groups[name].length }}
-        </span>
+        {{ name }}<span v-if="store.groups[name]?.length" class="tab-count">({{ store.groups[name].length }})</span>
       </button>
     </div>
   </div>

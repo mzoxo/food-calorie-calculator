@@ -2,6 +2,9 @@
 const num = v => parseFloat(v) || 0
 const round = v => Math.round(v * 10) / 10
 
+/** 數字加千分號（整數） */
+export const fmt = v => Math.round(v).toLocaleString('zh-TW')
+
 // ── 營養計算 ──────────────────────────────────────────
 
 /**
@@ -26,11 +29,11 @@ export function compute(food, quantity, mode) {
   // gram mode
   const ratio = quantity / 100
   return {
-    calories: round(num(food['每100g熱量'])   * ratio),
-    carb:     round(num(food['每100g碳水'])   * ratio),
-    fat:      round(num(food['每100g脂肪'])   * ratio),
-    protein:  round(num(food['每100g蛋白質']) * ratio),
-    fiber:    round(num(food['每100g膳食纖維']) * ratio),
+    calories: round(num(food['每 100g 熱量'])   * ratio),
+    carb:     round(num(food['每 100g 碳水'])   * ratio),
+    fat:      round(num(food['每 100g 脂肪'])   * ratio),
+    protein:  round(num(food['每 100g 蛋白質']) * ratio),
+    fiber:    round(num(food['每 100g 膳食纖維']) * ratio),
     grams:    quantity,
   }
 }
@@ -40,7 +43,7 @@ export function compute(food, quantity, mode) {
  * @param {Array} items - 群組內的食材清單
  */
 export function subtotal(items) {
-  return items.reduce((acc, item) => {
+  const s = items.reduce((acc, item) => {
     const n = compute(item.food, item.quantity, item.mode)
     acc.calories += n.calories
     acc.carb     += n.carb
@@ -49,6 +52,13 @@ export function subtotal(items) {
     acc.fiber    += n.fiber
     return acc
   }, { calories: 0, carb: 0, fat: 0, protein: 0, fiber: 0 })
+  return {
+    calories: round(s.calories),
+    carb:     round(s.carb),
+    fat:      round(s.fat),
+    protein:  round(s.protein),
+    fiber:    round(s.fiber),
+  }
 }
 
 /**
@@ -56,15 +66,22 @@ export function subtotal(items) {
  * @param {Object} groups - { groupName: [items] }
  */
 export function total(groups) {
-  return Object.values(groups).reduce((acc, items) => {
-    const s = subtotal(items)
-    acc.calories += s.calories
-    acc.carb     += s.carb
-    acc.fat      += s.fat
-    acc.protein  += s.protein
-    acc.fiber    += s.fiber
+  const s = Object.values(groups).reduce((acc, items) => {
+    const sub = subtotal(items)
+    acc.calories += sub.calories
+    acc.carb     += sub.carb
+    acc.fat      += sub.fat
+    acc.protein  += sub.protein
+    acc.fiber    += sub.fiber
     return acc
   }, { calories: 0, carb: 0, fat: 0, protein: 0, fiber: 0 })
+  return {
+    calories: round(s.calories),
+    carb:     round(s.carb),
+    fat:      round(s.fat),
+    protein:  round(s.protein),
+    fiber:    round(s.fiber),
+  }
 }
 
 /**

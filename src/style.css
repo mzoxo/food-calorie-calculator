@@ -331,6 +331,7 @@ select.input {
 /* ===== Main ===== */
 .main {
     flex: 1;
+    min-height: 100dvh;
     padding: var(--gap-md) var(--gap-lg);
     padding-bottom: 80px;
     display: flex;
@@ -672,7 +673,7 @@ select.input {
 .tab-count {
     font-size: 0.75rem;
     color: var(--c-text-muted);
-    margin-left: 2px;
+    margin-left: 0;
     font-weight: 400;
 }
 
@@ -1012,6 +1013,27 @@ select.input {
 .import-record-detail {
     font-size: 0.75rem;
     color: var(--c-text-muted);
+}
+
+.import-record-note {
+    margin-top: 3px;
+    font-size: 0.72rem;
+    color: var(--c-text-muted);
+    padding-left: 6px;
+    border-left: 2px solid var(--c-primary);
+    opacity: 0.8;
+}
+
+.import-matched-tag {
+    display: inline-block;
+    margin-left: 4px;
+    font-size: 0.68rem;
+    color: var(--c-primary);
+    border: 1px solid var(--c-primary);
+    border-radius: 3px;
+    padding: 0 3px;
+    opacity: 0.8;
+    vertical-align: middle;
 }
 
 .import-record-cal {

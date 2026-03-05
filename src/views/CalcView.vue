@@ -1,10 +1,11 @@
 <template>
   <!-- Header -->
-  <AppHeader @refresh="onRefresh" @menu="menuVisible = !menuVisible" />
+  <AppHeader @refresh="onRefresh" @menu="onMenuToggle" />
 
   <!-- 右上角選單 -->
   <AppMenu
     :visible="menuVisible"
+    :anchor="menuAnchor"
     @close="menuVisible = false"
     @open-profile="store.modal.profile.visible = true"
     @refresh="onRefresh"
@@ -31,7 +32,7 @@
   <!-- Footer -->
   <footer class="footer">
     <button class="btn btn-outline" @click="store.modal.presets.visible = true">常用組合</button>
-    <button v-if="isConfigured" class="btn btn-outline" @click="store.modal.import.visible = true">匯入</button>
+    <button v-if="isConfigured()" class="btn btn-outline" @click="store.modal.import.visible = true">匯入</button>
     <button class="btn btn-outline" @click="store.modal.export.visible = true">匯出</button>
     <button class="btn btn-outline" @click="onClearCurrent">清除計算</button>
   </footer>
@@ -68,6 +69,12 @@ import { loadFoods } from '../utils/api.js'
 import { isConfigured } from '../store/index.js'
 
 const menuVisible = ref(false)
+const menuAnchor  = ref(null)
+
+function onMenuToggle(rect) {
+  menuAnchor.value  = rect
+  menuVisible.value = !menuVisible.value
+}
 
 // ── 初始化 ────────────────────────────────────────────
 onMounted(async () => {

@@ -2,7 +2,7 @@
   <Teleport to="body">
     <div v-if="visible" class="menu-backdrop" @click="$emit('close')" />
     <transition name="menu">
-      <div v-if="visible" class="app-menu">
+      <div v-if="visible" class="app-menu" :style="menuStyle">
         <button class="menu-item" @click="onAddGroup">
           <Plus :size="15" :stroke-width="1.5" />
           新增群組
@@ -31,10 +31,19 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Plus, User, RefreshCw, Eraser, Trash2 } from 'lucide-vue-next'
 import { store, showPrompt, showToast, saveState, initDefaultGroups } from '../store/index.js'
 
-const props = defineProps({ visible: Boolean })
+const props = defineProps({ visible: Boolean, anchor: Object })
+
+const menuStyle = computed(() => {
+  if (!props.anchor) return {}
+  return {
+    top:   `${props.anchor.bottom + 6}px`,
+    right: `${window.innerWidth - props.anchor.right}px`,
+  }
+})
 const emit  = defineEmits(['close', 'open-profile', 'refresh', 'clear-current', 'clear-all'])
 
 async function onAddGroup() {
@@ -62,7 +71,7 @@ async function onAddGroup() {
 
 .app-menu {
   position: fixed;
-  top: 44px;
+  top: 50px;
   right: 16px;
   background: var(--c-bg);
   border: 1px solid var(--c-border);

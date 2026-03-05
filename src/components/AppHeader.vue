@@ -5,7 +5,7 @@
       <button class="icon-btn" title="重新整理食材資料" @click="$emit('refresh')">
         <RefreshCw :size="16" :stroke-width="1.5" />
       </button>
-      <button class="icon-btn" title="選單" @click="$emit('menu')">
+      <button ref="menuBtn" class="icon-btn" title="選單" @click="onMenu">
         <Menu :size="16" :stroke-width="1.5" />
       </button>
     </div>
@@ -13,7 +13,14 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { RefreshCw, Menu } from 'lucide-vue-next'
 
-defineEmits(['refresh', 'menu'])
+const emit   = defineEmits(['refresh', 'menu'])
+const menuBtn = ref(null)
+
+function onMenu() {
+  const rect = menuBtn.value?.getBoundingClientRect()
+  emit('menu', rect)
+}
 </script>

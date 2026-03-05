@@ -1,27 +1,24 @@
 <template>
-  <section v-if="hasItems" class="section" style="margin-top:var(--gap-md);padding-top:var(--gap-lg);border-top:1px solid var(--c-border-light)">
+  <section class="section" style="margin-top:var(--gap-md);padding-top:var(--gap-lg);border-top:1px solid var(--c-border-light)">
     <div class="section-header">
       <h2 class="section-title">總計</h2>
     </div>
 
     <!-- BMR / TDEE 進度條 -->
     <div v-if="bmr" class="bmr-panel">
-      <div class="bmr-row">
-        <span class="bmr-label">基礎代謝 BMR</span>
-        <span class="bmr-value">{{ bmr }} kcal</span>
-      </div>
-      <div class="bmr-track">
-        <div class="bmr-bar bmr-bar--bmr" :style="{ width: barPct(bmr) }" />
-        <div class="bmr-marker" :style="{ left: barPct(bmr) }" title="BMR" />
-      </div>
-
-      <div class="bmr-row" style="margin-top:var(--gap-xs)">
-        <span class="bmr-label">目標熱量</span>
-        <span class="bmr-value">{{ target }} kcal</span>
-      </div>
-      <div class="bmr-row">
-        <span class="bmr-label">TDEE</span>
-        <span class="bmr-value">{{ tdee }} kcal</span>
+      <div class="bmr-inline-row">
+        <span class="bmr-inline-item">
+          <span class="bmr-label">BMR</span>
+          <span class="bmr-value">{{ fmt(bmr) }}</span>
+        </span>
+        <span class="bmr-inline-item">
+          <span class="bmr-label">TDEE</span>
+          <span class="bmr-value">{{ fmt(tdee) }}</span>
+        </span>
+        <span class="bmr-inline-item">
+          <span class="bmr-label">目標</span>
+          <span class="bmr-value">{{ fmt(target) }}</span>
+        </span>
       </div>
 
       <!-- 主進度條：今日攝取 vs TDEE -->
@@ -35,7 +32,7 @@
         <div
           class="bmr-needle"
           :style="{ left: barPct(t.calories) }"
-          :title="`今日攝取 ${Math.round(t.calories)} kcal`"
+          :title="`今日攝取 ${fmt(t.calories)} kcal`"
         />
         <!-- 目標線 -->
         <div class="bmr-target-line" :style="{ left: barPct(target) }" title="目標" />
@@ -44,7 +41,7 @@
       <div class="bmr-intake-row">
         <span class="bmr-intake-label">今日攝取</span>
         <span class="bmr-intake-value" :class="intakeBarClass">
-          {{ Math.round(t.calories) }} kcal
+          {{ fmt(t.calories) }} kcal
         </span>
         <span class="bmr-diff">
           {{ intakeDiffLabel }}
@@ -59,7 +56,7 @@
         <div class="donut-container">
           <div class="donut-chart" :style="{ background: macroConic }" />
           <div class="donut-text">
-            <span class="donut-cal">{{ Math.round(t.calories) }}</span>
+            <span class="donut-cal">{{ fmt(t.calories) }}</span>
             <span class="donut-unit">kcal</span>
           </div>
         </div>
@@ -102,7 +99,7 @@
           <div v-for="meal in mealBreakdown" :key="meal.name" class="macro-item">
             <span class="macro-dot" :style="{ background: meal.color }" />
             <span class="macro-label">{{ meal.name }}</span>
-            <span class="macro-value">{{ Math.round(meal.calories) }}</span>
+            <span class="macro-value">{{ fmt(meal.calories) }}</span>
             <span class="macro-percent">{{ meal.pct }}%</span>
           </div>
         </div>
@@ -114,17 +111,13 @@
 <script setup>
 import { computed } from 'vue'
 import { store } from '../store/index.js'
-import { total, macroPct, subtotal, calcBMR, calcTDEE, calcTarget } from '../utils/calc.js'
+import { total, macroPct, subtotal, calcBMR, calcTDEE, calcTarget, fmt } from '../utils/calc.js'
 
 const MEAL_COLORS = ['#7C9EDE','#F4C454','#F08CA5','#8ECA99','#BCA0E6','#F4A674','#78C4CD','#D990B0']
 
 // ── 總計 ─────────────────────────────────────────────
 const t   = computed(() => total(store.groups))
 const pct = computed(() => macroPct(t.value))
-
-const hasItems = computed(() =>
-  Object.values(store.groups).some(g => g.length > 0)
-)
 
 // ── BMR / TDEE ────────────────────────────────────────
 const bmr    = computed(() => store.userProfile ? calcBMR(store.userProfile)    : null)
@@ -148,7 +141,7 @@ const intakeBarClass = computed(() => {
 const intakeDiffLabel = computed(() => {
   if (!target.value) return ''
   const diff = Math.round(t.value.calories - target.value)
-  return diff > 0 ? `超出目標 ${diff} kcal` : `距目標還差 ${Math.abs(diff)} kcal`
+  return diff > 0 ? `超出目標 ${fmt(diff)} kcal` : `距目標還差 ${fmt(Math.abs(diff))} kcal`
 })
 
 // ── 三大營養素圓餅圖 ──────────────────────────────────
@@ -209,6 +202,18 @@ const mealConic = computed(() => {
   justify-content: space-between;
   align-items: center;
   font-size: 0.75rem;
+}
+
+.bmr-inline-row {
+  display: flex;
+  gap: var(--gap-md);
+  font-size: 0.75rem;
+}
+
+.bmr-inline-item {
+  display: flex;
+  gap: 4px;
+  align-items: baseline;
 }
 
 .bmr-label { color: var(--c-text-muted); }

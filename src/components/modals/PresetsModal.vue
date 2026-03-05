@@ -56,15 +56,17 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import { X, Trash2 } from 'lucide-vue-next'
 import { store, savePresets, showConfirm } from '../../store/index.js'
 
 const modal = store.modal
 
-// 每個 preset 的使用份數
+// 每個 preset 的使用份數，每次開啟時重設為 1
 const qtyMap = reactive({})
-store.presets.forEach((_, i) => { qtyMap[i] = 1 })
+watch(() => modal.presets.visible, (v) => {
+  if (v) store.presets.forEach((_, i) => { qtyMap[i] = 1 })
+}, { immediate: true })
 
 async function deletePreset(i) {
   const ok = await showConfirm(`確定刪除「${store.presets[i].name}」？`)

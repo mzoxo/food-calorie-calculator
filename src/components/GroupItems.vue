@@ -12,7 +12,7 @@
           v-if="block.type === 'item'"
           :item="block.item"
           @remove="removeItem(block.index)"
-          @update-note="updateNote(block.index, $event)"
+          @edit="openEdit(store.activeGroup, block.index)"
         />
 
         <!-- 組合區塊 -->
@@ -38,7 +38,7 @@
               :item="entry.item"
               class="preset-item"
               @remove="removeItem(entry.index)"
-              @update-note="updateNote(entry.index, $event)"
+              @edit="openEdit(store.activeGroup, entry.index)"
             />
           </div>
         </div>
@@ -48,7 +48,7 @@
 
     <!-- 小計 -->
     <div v-if="items.length" class="subtotal">
-      <span class="subtotal-item">熱量 <span class="subtotal-value">{{ Math.round(sub.calories) }} kcal</span></span>
+      <span class="subtotal-item">熱量 <span class="subtotal-value">{{ fmt(sub.calories) }} kcal</span></span>
       <span class="subtotal-item">碳水 <span class="subtotal-value">{{ sub.carb }}g</span></span>
       <span class="subtotal-item">蛋白質 <span class="subtotal-value">{{ sub.protein }}g</span></span>
       <span class="subtotal-item">脂肪 <span class="subtotal-value">{{ sub.fat }}g</span></span>
@@ -62,7 +62,7 @@ import { computed, reactive } from 'vue'
 import { ChevronDown, ChevronRight, X } from 'lucide-vue-next'
 import FoodItem from './FoodItem.vue'
 import { store, removeFoodFromGroup, saveState } from '../store/index.js'
-import { subtotal } from '../utils/calc.js'
+import { subtotal, fmt } from '../utils/calc.js'
 
 // ── 當前群組 items ────────────────────────────────────
 const items = computed(() => store.groups[store.activeGroup] || [])
@@ -111,9 +111,15 @@ function removeItem(index) {
   removeFoodFromGroup(store.activeGroup, index)
 }
 
-function updateNote(index, note) {
-  store.groups[store.activeGroup][index].note = note
-  saveState()
+function openEdit(groupName, index) {
+  const item = store.groups[groupName]?.[index]
+  if (!item) return
+  store.modal.addFood.food      = item.food
+  store.modal.addFood.editMode  = true
+  store.modal.addFood.groupName = groupName
+  store.modal.addFood.index     = index
+  store.modal.addFood.note      = item.note || ''
+  store.modal.addFood.visible   = true
 }
 
 function removePresetBlock(block) {

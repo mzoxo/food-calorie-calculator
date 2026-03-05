@@ -12,7 +12,7 @@
           <div class="food-info">
             <span v-if="food?.['品牌']">{{ food['品牌'] }} · </span>
             <span>{{ food?.['分類'] }}</span>
-            <span v-if="food?.['每100g熱量']"> · {{ food['每100g熱量'] }} kcal / 100g</span>
+            <span v-if="food?.['每 100g 熱量']"> · {{ food['每 100g 熱量'] }} kcal / 100g</span>
             <span v-if="food?.['每份量(g)']"> · 每份 {{ food['每份量(g)'] }}g</span>
           </div>
 
@@ -77,15 +77,23 @@
             </div>
           </div>
 
-          <!-- 選群組 -->
+          <!-- 備註 -->
           <div class="field">
+            <span class="field-label">備註</span>
+            <input v-model="note" type="text" class="input" placeholder="選填" />
+          </div>
+
+          <!-- 選群組（新增模式才顯示） -->
+          <div v-if="!modal.addFood.editMode" class="field">
             <span class="field-label">加入群組</span>
             <select v-model="selectedGroup" class="input">
               <option v-for="g in store.groupOrder" :key="g" :value="g">{{ g }}</option>
             </select>
           </div>
 
-          <button class="btn btn-primary btn-block" @click="confirm">加入</button>
+          <button class="btn btn-primary btn-block" @click="confirm">
+            {{ modal.addFood.editMode ? '儲存' : '加入' }}
+          </button>
         </div>
       </div>
     </div>
@@ -95,7 +103,7 @@
 <script setup>
 import { ref, computed, watch } from 'vue'
 import { X, Minus, Plus } from 'lucide-vue-next'
-import { store, addFoodToGroup, addToRecent } from '../../store/index.js'
+import { store, addFoodToGroup, addToRecent, saveState } from '../../store/index.js'
 import { compute } from '../../utils/calc.js'
 
 const modal = store.modal
@@ -103,15 +111,24 @@ const modal = store.modal
 // ── 本地狀態 ──────────────────────────────────────────
 const mode          = ref('gram')
 const quantity      = ref(100)
+const note          = ref('')
 const selectedGroup = ref('')
 
 const food = computed(() => modal.addFood.food)
 
 // 每次開啟重置
 watch(() => modal.addFood.visible, (v) => {
-  if (v) {
+  if (!v) return
+  if (modal.addFood.editMode) {
+    // 編輯模式：預填現有值
+    const item = store.groups[modal.addFood.groupName]?.[modal.addFood.index]
+    mode.value     = item?.mode     ?? 'gram'
+    quantity.value = item?.quantity ?? 100
+    note.value     = item?.note     ?? ''
+  } else {
     mode.value          = 'gram'
     quantity.value      = 100
+    note.value          = ''
     selectedGroup.value = store.activeGroup
   }
 })
@@ -136,12 +153,23 @@ function adjust(dir) {
 
 function confirm() {
   if (!food.value || quantity.value <= 0) return
-  addFoodToGroup(food.value, quantity.value, mode.value, selectedGroup.value)
-  addToRecent(food.value)
+  if (modal.addFood.editMode) {
+    const item = store.groups[modal.addFood.groupName]?.[modal.addFood.index]
+    if (item) {
+      item.quantity = quantity.value
+      item.mode     = mode.value
+      item.note     = note.value.trim()
+      saveState()
+    }
+  } else {
+    addFoodToGroup(food.value, quantity.value, mode.value, selectedGroup.value, { note: note.value.trim() })
+    addToRecent(food.value)
+  }
   close()
 }
 
 function close() {
-  modal.addFood.visible = false
+  modal.addFood.visible  = false
+  modal.addFood.editMode = false
 }
 </script>
