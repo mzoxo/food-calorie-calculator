@@ -1,7 +1,7 @@
 import { reactive } from 'vue'
 
 // ── 常數 ──────────────────────────────────────────────
-const DEFAULT_GROUPS = ['早餐', '午餐', '晚餐', '點心', '水果']
+export const DEFAULT_GROUPS = ['早餐', '午餐', '晚餐', '點心', '水果', '飲料']
 
 const KEYS = {
   API:     'fc_api_url',
@@ -47,6 +47,9 @@ export const store = reactive({
 
   // Toast
   toast: { message: '', visible: false },
+
+  // 全域載入中
+  loading: false,
 })
 
 // ── LocalStorage 存取 ─────────────────────────────────

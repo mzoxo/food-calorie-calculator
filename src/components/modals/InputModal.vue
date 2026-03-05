@@ -14,7 +14,7 @@
             v-model="value"
             type="text"
             class="input"
-            @keydown.enter="resolve(value)"
+            @keydown.enter="(e) => { if (!e.isComposing) resolve(value) }"
             @keydown.esc="resolve(null)"
           />
           <div style="display:flex;gap:var(--gap-sm)">

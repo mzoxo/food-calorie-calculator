@@ -26,6 +26,8 @@ async function fetchFromLocal() {
  * @param {boolean} forceRefresh - 強制重新從 API 拉取
  */
 export async function loadFoods(forceRefresh = false) {
+  store.loading = true
+  try {
   // 不強制更新時，先試 cache
   if (!forceRefresh) {
     const cached = loadCache()
@@ -64,6 +66,9 @@ export async function loadFoods(forceRefresh = false) {
     store.foods = []
     showToast('無法載入食材資料')
     console.error(e)
+  }
+  } finally {
+    store.loading = false
   }
 }
 

@@ -13,6 +13,11 @@
         @touchmove="onTouchEnd"
       >
         {{ name }}<span v-if="store.groups[name]?.length" class="tab-count">({{ store.groups[name].length }})</span>
+        <span
+          v-if="!DEFAULT_GROUPS.includes(name)"
+          class="tab-remove"
+          @click.stop="quickDelete(name)"
+        >×</span>
       </button>
     </div>
   </div>
@@ -38,7 +43,7 @@
 <script setup>
 import { reactive, computed } from 'vue'
 import { Pencil, Trash2 } from 'lucide-vue-next'
-import { store, saveState, showPrompt, showConfirm, showToast } from '../store/index.js'
+import { store, saveState, showPrompt, showConfirm, showToast, DEFAULT_GROUPS } from '../store/index.js'
 
 // ── Context menu ──────────────────────────────────────
 const menu = reactive({ visible: false, group: '', x: 0, y: 0 })
@@ -50,6 +55,7 @@ const menuStyle = computed(() => ({
 }))
 
 function openMenu(name, e) {
+  if (DEFAULT_GROUPS.includes(name)) return
   menu.group   = name
   menu.x       = Math.min(e.clientX, window.innerWidth  - 170)
   menu.y       = Math.min(e.clientY, window.innerHeight - 100)
@@ -62,8 +68,8 @@ function closeMenu() { menu.visible = false }
 let longPressTimer = null
 
 function onTouchStart(name) {
+  if (DEFAULT_GROUPS.includes(name)) return
   longPressTimer = setTimeout(() => {
-    // 模擬在螢幕中間偏上位置
     menu.group   = name
     menu.x       = window.innerWidth  / 2 - 80
     menu.y       = window.innerHeight / 2 - 50
@@ -96,6 +102,18 @@ async function rename() {
   saveState()
 }
 
+async function quickDelete(name) {
+  const ok = await showConfirm(`確定刪除「${name}」群組及其所有食材？`)
+  if (!ok) return
+  const idx = store.groupOrder.indexOf(name)
+  store.groupOrder.splice(idx, 1)
+  delete store.groups[name]
+  if (store.activeGroup === name) {
+    store.activeGroup = store.groupOrder[Math.max(0, idx - 1)]
+  }
+  saveState()
+}
+
 async function deleteGroup() {
   closeMenu()
   if (store.groupOrder.length <= 1) {
@@ -115,6 +133,20 @@ async function deleteGroup() {
 </script>
 
 <style scoped>
+.tab-remove {
+  margin-left: 3px;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: var(--c-text-muted);
+  opacity: 0.5;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.tab:hover .tab-remove,
+.tab.active .tab-remove {
+  opacity: 1;
+}
+
 .menu-backdrop {
   position: fixed;
   inset: 0;

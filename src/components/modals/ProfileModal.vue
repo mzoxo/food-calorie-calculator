@@ -6,7 +6,7 @@
           <h2>個人資料</h2>
           <button class="icon-btn" @click="close"><X :size="16" :stroke-width="1.5" /></button>
         </div>
-        <div class="modal-body">
+        <div class="modal-body profile-modal-body">
           <!-- 基本資料 -->
           <div class="profile-row">
             <label class="field">
@@ -16,6 +16,7 @@
             <label class="field">
               <span class="field-label">性別</span>
               <select v-model="form.gender" class="input">
+                <option :value="null" disabled>請選擇</option>
                 <option value="male">男</option>
                 <option value="female">女</option>
               </select>
@@ -54,15 +55,15 @@
           <div v-if="bmrPreview" class="nutrition-preview">
             <div class="nutrition-preview-item">
               <span class="nutrition-preview-label">BMR</span>
-              <span class="nutrition-preview-value">{{ bmrPreview }} kcal</span>
+              <span class="nutrition-preview-value">{{ fmt(bmrPreview) }} kcal</span>
             </div>
             <div class="nutrition-preview-item">
               <span class="nutrition-preview-label">TDEE</span>
-              <span class="nutrition-preview-value">{{ tdeePreview }} kcal</span>
+              <span class="nutrition-preview-value">{{ fmt(tdeePreview) }} kcal</span>
             </div>
             <div class="nutrition-preview-item">
               <span class="nutrition-preview-label">減脂目標</span>
-              <span class="nutrition-preview-value">{{ targetPreview }} kcal</span>
+              <span class="nutrition-preview-value">{{ fmt(targetPreview) }} kcal</span>
             </div>
           </div>
 
@@ -82,18 +83,18 @@
 import { ref, computed, watch } from 'vue'
 import { X } from 'lucide-vue-next'
 import { store, saveUserProfile, showToast } from '../../store/index.js'
-import { ACTIVITY_LEVELS, calcBMR, calcTDEE, calcTarget } from '../../utils/calc.js'
+import { ACTIVITY_LEVELS, calcBMR, calcTDEE, calcTarget, fmt } from '../../utils/calc.js'
 
 const modal = store.modal
 
-const form = ref({ age: null, height: null, weight: null, gender: 'male', activityLevel: 1.375 })
+const form = ref({ age: null, height: null, weight: null, gender: null, activityLevel: null })
 
 // 開啟時載入現有資料
 watch(() => modal.profile.visible, (v) => {
   if (v) {
     form.value = store.userProfile
       ? { ...store.userProfile }
-      : { age: null, height: null, weight: null, gender: 'male', activityLevel: 1.375 }
+      : { age: null, height: null, weight: null, gender: null, activityLevel: null }
   }
 })
 
@@ -120,6 +121,17 @@ function close() { modal.profile.visible = false }
 </script>
 
 <style scoped>
+:deep(.modal) {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.profile-modal-body {
+  overflow-y: auto;
+  flex: 1;
+}
+
 .profile-row {
   display: grid;
   grid-template-columns: 1fr 1fr;

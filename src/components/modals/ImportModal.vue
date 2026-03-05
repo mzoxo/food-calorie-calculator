@@ -16,7 +16,10 @@
           <!-- 可捲動的結果區 -->
           <div class="import-scroll">
             <!-- 載入中 -->
-            <div v-if="loading" class="notice">查詢中…</div>
+            <div v-if="loading" class="import-loading">
+              <div class="import-spinner" />
+              <span>查詢中…</span>
+            </div>
 
             <!-- 結果 -->
             <div v-if="records.length" class="import-records">
@@ -50,8 +53,10 @@
 
         <!-- 固定底部按鈕 -->
         <div v-if="records.length" class="import-footer">
-          <label class="import-clear-option">
-            <input v-model="clearBeforeImport" type="checkbox" />
+          <label class="import-clear-option" @click="clearBeforeImport = !clearBeforeImport">
+            <span class="custom-checkbox" :class="{ checked: clearBeforeImport }">
+              <svg v-if="clearBeforeImport" width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
             匯入前清空當前資料
           </label>
           <button class="btn btn-primary btn-block" @click="confirmImport">確認匯入</button>
@@ -199,6 +204,25 @@ function close() { modal.import.visible = false }
   min-height: 0;
 }
 
+.import-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap-sm);
+  padding: var(--gap-lg) 0;
+  font-size: 0.85rem;
+  color: var(--c-text-muted);
+}
+
+.import-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--c-border);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
 .import-footer {
   padding: var(--gap-md) var(--gap-lg);
   border-top: 1px solid var(--c-border-light);
@@ -215,5 +239,24 @@ function close() { modal.import.visible = false }
   font-size: 0.82rem;
   color: var(--c-text-secondary);
   cursor: pointer;
+  user-select: none;
+}
+
+.custom-checkbox {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border: 1.5px solid var(--c-border);
+  border-radius: 3px;
+  background: var(--c-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--duration) var(--ease);
+}
+
+.custom-checkbox.checked {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
 }
 </style>

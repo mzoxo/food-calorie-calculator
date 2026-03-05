@@ -3,24 +3,20 @@
     <div v-if="visible" class="menu-backdrop" @click="$emit('close')" />
     <transition name="menu">
       <div v-if="visible" class="app-menu" :style="menuStyle">
-        <button class="menu-item" @click="onAddGroup">
-          <Plus :size="15" :stroke-width="1.5" />
-          新增群組
-        </button>
         <button class="menu-item" @click="emit('open-profile')">
           <User :size="15" :stroke-width="1.5" />
           個人資料
         </button>
+        <button class="menu-item" @click="onAddGroup">
+          <Plus :size="15" :stroke-width="1.5" />
+          新增群組
+        </button>
         <div class="menu-divider" />
         <button class="menu-item" @click="emit('refresh')">
           <RefreshCw :size="15" :stroke-width="1.5" />
-          重新整理食材
+          重新抓取食材
         </button>
         <div class="menu-divider" />
-        <button class="menu-item" @click="emit('clear-current')">
-          <Eraser :size="15" :stroke-width="1.5" />
-          清除所有群組
-        </button>
         <button class="menu-item danger" @click="emit('clear-all')">
           <Trash2 :size="15" :stroke-width="1.5" />
           重設
@@ -44,7 +40,7 @@ const menuStyle = computed(() => {
     right: `${window.innerWidth - props.anchor.right}px`,
   }
 })
-const emit  = defineEmits(['close', 'open-profile', 'refresh', 'clear-current', 'clear-all'])
+const emit  = defineEmits(['close', 'open-profile', 'refresh', 'clear-all'])
 
 async function onAddGroup() {
   emit('close')

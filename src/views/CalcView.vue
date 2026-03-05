@@ -1,4 +1,10 @@
 <template>
+  <!-- 載入蓋板 -->
+  <div v-if="store.loading" class="loading-overlay">
+    <div class="loading-spinner" />
+    <span class="loading-text">載入食材資料中…</span>
+  </div>
+
   <!-- Header -->
   <AppHeader @menu="onMenuToggle" />
 
@@ -9,7 +15,6 @@
     @close="menuVisible = false"
     @open-profile="store.modal.profile.visible = true"
     @refresh="onRefresh"
-    @clear-current="onClearCurrent"
     @clear-all="onClearAll"
   />
 
@@ -98,8 +103,8 @@ async function onRefresh() {
 }
 
 // ── 清除 ──────────────────────────────────────────────
+
 async function onClearCurrent() {
-  menuVisible.value = false
   const ok = await showConfirm('清除所有群組的食材？')
   if (!ok) return
   store.groupOrder.forEach(g => { store.groups[g] = [] })

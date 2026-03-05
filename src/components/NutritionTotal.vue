@@ -5,34 +5,31 @@
     </div>
 
     <!-- BMR / TDEE 進度條 -->
-    <div v-if="bmr" class="bmr-panel">
-      <div class="bmr-inline-row">
-        <span class="bmr-inline-item">
-          <span class="bmr-label">BMR</span>
-          <span class="bmr-value">{{ fmt(bmr) }}</span>
-        </span>
-        <span class="bmr-inline-right">
+    <div class="bmr-panel">
+      <!-- 有個人資料：顯示 BMR / TDEE / 目標 -->
+      <template v-if="bmr">
+        <div class="bmr-inline-row">
           <span class="bmr-inline-item">
-            <span class="bmr-label">目標</span>
-            <span class="bmr-value">{{ fmt(target) }}</span>
+            <span class="bmr-label">BMR</span>
+            <span class="bmr-value">{{ fmt(bmr) }}</span>
           </span>
-          <span class="bmr-inline-item">
-            <span class="bmr-label">TDEE</span>
-            <span class="bmr-value">{{ fmt(tdee) }}</span>
+          <span class="bmr-inline-right">
+            <span class="bmr-inline-item">
+              <span class="bmr-label">目標</span>
+              <span class="bmr-value">{{ fmt(target) }}</span>
+            </span>
+            <span class="bmr-inline-item">
+              <span class="bmr-label">TDEE</span>
+              <span class="bmr-value">{{ fmt(tdee) }}</span>
+            </span>
           </span>
-        </span>
-      </div>
+        </div>
+      </template>
 
-      <!-- 主進度條：今日攝取 vs TDEE -->
+      <!-- 進度條 -->
       <div class="bmr-track" style="margin-top:4px">
-        <!-- 填充條 = 今日攝取，上限 100%（TDEE） -->
-        <div
-          class="bmr-bar"
-          :class="intakeBarClass"
-          :style="{ width: intakePct }"
-        />
-        <!-- 目標線 -->
-        <div class="bmr-target-line" :style="{ left: targetPct }" title="目標" />
+        <div class="bmr-bar" :class="intakeBarClass" :style="{ width: intakePct }" />
+        <div v-if="bmr" class="bmr-target-line" :style="{ left: targetPct }" title="目標" />
       </div>
 
       <div class="bmr-intake-row">
@@ -40,9 +37,10 @@
         <span class="bmr-intake-value" :class="intakeBarClass">
           {{ fmt(t.calories) }} kcal
         </span>
-        <span class="bmr-diff">
-          {{ intakeDiffLabel }}
-        </span>
+        <span v-if="bmr" class="bmr-diff">{{ intakeDiffLabel }}</span>
+        <button v-else class="bmr-setup-hint" @click="store.modal.profile.visible = true">
+          設定個人資料以顯示目標 →
+        </button>
       </div>
     </div>
 
@@ -122,9 +120,9 @@ const bmr    = computed(() => store.userProfile ? calcBMR(store.userProfile)    
 const tdee   = computed(() => bmr.value          ? calcTDEE(bmr.value, store.userProfile.activityLevel) : null)
 const target = computed(() => tdee.value         ? calcTarget(tdee.value)       : null)
 
-// 填充條：攝取 / TDEE，超過 cap 在 100%
+// 填充條：有 TDEE 時相對 TDEE，沒有時固定顯示 60% 寬（純示意）
 const intakePct = computed(() => {
-  if (!tdee.value) return '0%'
+  if (!tdee.value) return t.value.calories ? '60%' : '0%'
   return `${Math.min(100, t.value.calories / tdee.value * 100).toFixed(1)}%`
 })
 
@@ -135,9 +133,9 @@ const targetPct = computed(() => {
 })
 
 const intakeBarClass = computed(() => {
-  if (!t.value.calories) return ''
-  if (t.value.calories > tdee.value)   return 'over-tdee'
-  if (t.value.calories > target.value) return 'over-target'
+  if (!t.value.calories || !tdee.value) return ''
+  if (t.value.calories > tdee.value)    return 'over-tdee'
+  if (t.value.calories > target.value)  return 'over-target'
   return 'under-target'
 })
 
@@ -289,6 +287,23 @@ const mealConic = computed(() => {
   color: var(--c-text-muted);
   font-size: 0.72rem;
   margin-left: auto;
+}
+
+.bmr-setup-hint {
+  margin-left: auto;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.72rem;
+  color: var(--c-primary);
+  cursor: pointer;
+  font-family: var(--font);
+  opacity: 0.8;
+  transition: opacity var(--duration) var(--ease);
+}
+
+.bmr-setup-hint:hover {
+  opacity: 1;
 }
 
 /* Donut 內圈 */
