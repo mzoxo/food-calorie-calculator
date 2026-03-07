@@ -1,4 +1,5 @@
 <template>
+  <div class="foods-view">
   <!-- Header -->
   <header class="header">
     <button class="icon-btn" @click="$router.push('/')">
@@ -48,7 +49,6 @@
   <!-- 表格 -->
   <FoodTable
     v-else
-    :style="compareMode ? 'padding-bottom: 80px' : ''"
     :foods="filteredFoods"
     :sort-field="sortField"
     :sort-dir="sortDir"
@@ -119,6 +119,7 @@
       </div>
     </div>
   </Teleport>
+  </div>
 </template>
 
 <script setup>
