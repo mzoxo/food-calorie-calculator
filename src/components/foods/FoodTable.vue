@@ -38,8 +38,8 @@
         </thead>
         <tbody>
           <tr
-            v-for="food in foods"
-            :key="food['名稱']"
+            v-for="(food, idx) in foods"
+            :key="food['名稱'] != null ? food['名稱'] + '|' + (food['品牌'] || '') : idx"
             :class="{ 'row-selected': selectedIds.has(food['名稱']), 'row-compare': compareMode }"
             @click="compareMode ? $emit('toggle-select', food) : null"
           >
