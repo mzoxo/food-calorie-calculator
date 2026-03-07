@@ -126,7 +126,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useBasis } from '../composables/useBasis.js'
 import { ChevronLeft, X, Search, Pencil, RefreshCw } from 'lucide-vue-next'
-import { store } from '../store/index.js'
+import { store, openAddFood } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
 import FoodTable       from '../components/foods/FoodTable.vue'
 import FoodCompareBar  from '../components/foods/FoodCompareBar.vue'
@@ -238,11 +238,6 @@ const filteredFoods = computed(() => {
 })
 
 // ── 加入計算頁 ─────────────────────────────────────────
-function openAddFood(food) {
-  store.modal.addFood.food    = food
-  store.modal.addFood.visible = true
-}
-
 // ── 比較模式 ───────────────────────────────────────────
 const compareMode    = ref(false)
 const selectedIds    = ref(new Set())

@@ -108,7 +108,7 @@
 <script setup>
 import { ref } from 'vue'
 import { X } from 'lucide-vue-next'
-import { store } from '../../store/index.js'
+import { openAddFood } from '../../store/index.js'
 import { fmt } from '../../utils/calc.js'
 import { useBasis } from '../../composables/useBasis.js'
 
@@ -131,10 +131,7 @@ function isMax(food, key) {
 }
 
 function addFood(food) {
-  const grams = calcGrams(food)
-  store.modal.addFood.initQuantity = grams
-  store.modal.addFood.food         = food
-  store.modal.addFood.visible      = true
+  openAddFood(food, { initQuantity: calcGrams(food) })
   emit('close')
 }
 </script>

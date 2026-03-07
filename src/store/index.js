@@ -186,6 +186,29 @@ export function showToast(message) {
   _toastTimer = setTimeout(() => { store.toast.visible = false }, 2000)
 }
 
+// ── Modal 開啟 helper ─────────────────────────────────
+
+export function openModal(name) {
+  store.modal[name].visible = true
+}
+
+export function openAddFood(food, options = {}) {
+  const m = store.modal.addFood
+  m.food         = food
+  m.editMode     = options.editMode     ?? false
+  m.groupName    = options.groupName    ?? ''
+  m.index        = options.index        ?? -1
+  m.note         = options.note         ?? ''
+  m.initQuantity = options.initQuantity ?? null
+  m.visible      = true
+}
+
+export function openPresetUse(preset, qty = 1) {
+  store.modal.presetUse.preset  = preset
+  store.modal.presetUse.qty     = qty
+  store.modal.presetUse.visible = true
+}
+
 // ── Modal 工具（Promise 型）────────────────────────────
 
 export function showConfirm(message) {

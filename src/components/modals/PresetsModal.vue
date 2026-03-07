@@ -62,7 +62,7 @@
 <script setup>
 import { reactive, watch } from 'vue'
 import { X, Trash2 } from 'lucide-vue-next'
-import { store, savePresets, showConfirm } from '../../store/index.js'
+import { store, savePresets, showConfirm, openModal, openPresetUse } from '../../store/index.js'
 
 const modal = store.modal
 
@@ -80,15 +80,13 @@ async function deletePreset(i) {
 }
 
 function openUse(preset, i) {
-  modal.presets.visible      = false
-  modal.presetUse.preset     = preset
-  modal.presetUse.qty        = qtyMap[i] ?? 1
-  modal.presetUse.visible    = true
+  modal.presets.visible = false
+  openPresetUse(preset, qtyMap[i] ?? 1)
 }
 
 function openSave() {
-  modal.presets.visible  = false
-  modal.presetSave.visible = true
+  modal.presets.visible = false
+  openModal('presetSave')
 }
 
 function close() { modal.presets.visible = false }

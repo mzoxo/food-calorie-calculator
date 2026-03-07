@@ -38,7 +38,7 @@
           {{ fmt(t.calories) }} kcal
         </span>
         <span v-if="bmr" class="bmr-diff">{{ intakeDiffLabel }}</span>
-        <button v-else class="bmr-setup-hint" @click="store.modal.profile.visible = true">
+        <button v-else class="bmr-setup-hint" @click="openModal('profile')">
           設定個人資料以顯示目標 →
         </button>
       </div>
@@ -106,7 +106,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { store } from '../store/index.js'
+import { store, openModal } from '../store/index.js'
 import { total, macroPct, subtotal, calcBMR, calcTDEE, calcTarget, fmt } from '../utils/calc.js'
 
 const MEAL_COLORS = ['#7C9EDE','#F4C454','#F08CA5','#8ECA99','#BCA0E6','#F4A674','#78C4CD','#D990B0']
