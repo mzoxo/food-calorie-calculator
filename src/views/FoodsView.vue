@@ -124,6 +124,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useBasis } from '../composables/useBasis.js'
 import { ChevronLeft, X, Search, Pencil, RefreshCw } from 'lucide-vue-next'
 import { store } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
@@ -135,13 +136,7 @@ import AddFoodModal    from '../components/modals/AddFoodModal.vue'
 // ── 基準設定 ───────────────────────────────────────────
 const basisType  = ref('gram')
 const basisValue = ref(100)
-const isDefault  = computed(() => basisType.value === 'gram' && basisValue.value === 100)
-
-const BASIS_LABELS = { gram: '克數', calories: '熱量', protein: '蛋白質', carb: '碳水', fat: '脂肪' }
-const basisUnit = computed(() => basisType.value === 'calories' ? 'kcal' : 'g')
-const basisDisplayText = computed(() =>
-  `每 ${basisValue.value}${basisUnit.value}（${BASIS_LABELS[basisType.value]}）`
-)
+const { isDefault, basisDisplayText } = useBasis(basisType, basisValue)
 
 const basisModalVisible = ref(false)
 const draftType  = ref('gram')
