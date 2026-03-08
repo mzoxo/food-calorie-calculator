@@ -91,16 +91,16 @@ function fmtDate(d) {
   return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
 }
 
-function quickDateEntry(daysAgo) {
+function quickDateEntry(daysOffset) {
   const d = new Date()
-  d.setDate(d.getDate() - daysAgo)
+  d.setDate(d.getDate() + daysOffset)
   const value = fmtDate(d)
   const weekdays = ['日', '一', '二', '三', '四', '五', '六']
-  const prefix = daysAgo === 0 ? '今天' : daysAgo === 1 ? '昨天' : '前天'
+  const prefix = daysOffset === 0 ? '今天' : daysOffset === 1 ? '明天' : '昨天'
   return { value, label: `${prefix} ${value.slice(5)} (${weekdays[d.getDay()]})` }
 }
 
-const quickDates = [quickDateEntry(0), quickDateEntry(1), quickDateEntry(2)]
+const quickDates = [quickDateEntry(1), quickDateEntry(0), quickDateEntry(-1)]
 const selectedDates = ref([fmtDate(new Date())])
 const extraDateInput = ref('')
 const extraDates = ref([])
