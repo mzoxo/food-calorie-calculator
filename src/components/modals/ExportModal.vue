@@ -23,9 +23,12 @@
               </div>
             </div>
 
-            <!-- 用餐時間 -->
-            <div class="preview-label" style="margin-top:14px">用餐時間</div>
-            <div class="time-list">
+            <!-- 用餐時間（可展收） -->
+            <button class="time-toggle" @click="showTimes = !showTimes">
+              <span>用餐時間</span>
+              <ChevronDown :size="14" :style="{ transform: showTimes ? 'rotate(180deg)' : '', transition: 'transform .2s' }" />
+            </button>
+            <div v-if="showTimes" class="time-list">
               <div v-for="g in activeGroups" :key="g" class="time-row">
                 <span class="time-label">{{ g }}</span>
                 <input type="time" v-model="mealTimes[g]" class="time-input" />
@@ -79,7 +82,7 @@
 
 <script setup>
 import { computed, ref, reactive, watch } from 'vue'
-import { X } from 'lucide-vue-next'
+import { X, ChevronDown } from 'lucide-vue-next'
 import { store, isConfigured, showToast, showConfirm } from '../../store/index.js'
 import { generateExport, generateDietRows, MEAL_TIMES } from '../../utils/export.js'
 import { logDietRow } from '../../utils/api.js'
@@ -119,6 +122,7 @@ const selectedDates = ref([fmtDate(new Date())])
 const extraDateInput = ref('')
 const extraDates = ref([])
 const writing = ref(false)
+const showTimes = ref(false)
 
 // 用餐時間（每個餐別一個，可編輯）
 const mealTimes = reactive({})
@@ -256,6 +260,20 @@ function close() { modal.export.visible = false }
 }
 
 /* 用餐時間 */
+.time-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 12px 0 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--c-text-sub, #666);
+  letter-spacing: .04em;
+  cursor: pointer;
+}
 .time-list {
   display: flex;
   flex-direction: column;
