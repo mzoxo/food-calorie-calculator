@@ -229,7 +229,8 @@ function close() { modal.export.visible = false }
 .preview-table {
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-y: auto;
+  max-height: 240px;
 }
 .preview-row {
   display: flex;
