@@ -23,18 +23,6 @@
               </div>
             </div>
 
-            <!-- 用餐時間（可展收） -->
-            <button class="time-toggle" @click="showTimes = !showTimes">
-              <span>用餐時間</span>
-              <ChevronDown :size="14" :style="{ transform: showTimes ? 'rotate(180deg)' : '', transition: 'transform .2s' }" />
-            </button>
-            <div v-if="showTimes" class="time-list">
-              <div v-for="g in activeGroups" :key="g" class="time-row">
-                <span class="time-label">{{ g }}</span>
-                <input type="time" v-model="mealTimes[g]" class="time-input" />
-              </div>
-            </div>
-
             <!-- 日期選擇 -->
             <div class="preview-label" style="margin-top:14px">選擇日期</div>
             <div class="date-list">
@@ -55,25 +43,25 @@
               <input type="date" v-model="extraDateInput" class="date-input" />
               <button class="btn btn-ghost btn-sm" @click="addExtraDate" :disabled="!extraDateInput">加入</button>
             </div>
-
-            <button
-              class="btn btn-primary btn-block"
-              style="margin-top:14px"
-              :disabled="!selectedDates.length || !rows.length || writing"
-              @click="write"
-            >
-              {{ writing
-                ? `寫入中...`
-                : `寫入記錄（${selectedDates.length} 天 × ${rows.length} 筆）` }}
-            </button>
           </template>
 
           <!-- ── 未設定 API：複製模式 ── -->
           <template v-else>
             <textarea :value="text" class="export-textarea" readonly />
-            <button class="btn btn-primary btn-block" @click="copy">複製到剪貼簿</button>
           </template>
 
+        </div>
+
+        <!-- ── 固定底部按鈕 ── -->
+        <div class="modal-footer">
+          <button v-if="configured"
+            class="btn btn-primary btn-block"
+            :disabled="!selectedDates.length || !rows.length || writing"
+            @click="write"
+          >
+            {{ writing ? '寫入中...' : `寫入記錄（${selectedDates.length} 天 × ${rows.length} 筆）` }}
+          </button>
+          <button v-else class="btn btn-primary btn-block" @click="copy">複製到剪貼簿</button>
         </div>
       </div>
     </div>
@@ -81,10 +69,10 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, watch } from 'vue'
-import { X, ChevronDown } from 'lucide-vue-next'
+import { computed, ref, watch } from 'vue'
+import { X } from 'lucide-vue-next'
 import { store, isConfigured, showToast, showConfirm } from '../../store/index.js'
-import { generateExport, generateDietRows, MEAL_TIMES } from '../../utils/export.js'
+import { generateExport, generateDietRows } from '../../utils/export.js'
 import { logDietRow } from '../../utils/api.js'
 
 const modal = store.modal
@@ -103,11 +91,6 @@ function fmtDate(d) {
   return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
 }
 
-function nowTimeStr() {
-  const d = new Date()
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-}
-
 function quickDateEntry(daysOffset) {
   const d = new Date()
   d.setDate(d.getDate() + daysOffset)
@@ -122,11 +105,6 @@ const selectedDates = ref([fmtDate(new Date())])
 const extraDateInput = ref('')
 const extraDates = ref([])
 const writing = ref(false)
-const showTimes = ref(false)
-
-// 用餐時間（每個餐別一個，可編輯）
-const mealTimes = reactive({})
-const activeGroups = computed(() => [...new Set(rows.value.map(r => r.餐別))])
 
 // 每次開啟 modal 時重設狀態
 watch(() => modal.export.visible, v => {
@@ -135,13 +113,6 @@ watch(() => modal.export.visible, v => {
   extraDateInput.value = ''
   extraDates.value = []
   writing.value = false
-  // 初始化用餐時間
-  const nowStr = nowTimeStr()
-  for (const g of store.groupOrder) {
-    if (store.groups[g]?.length) {
-      mealTimes[g] = MEAL_TIMES[g] || nowStr
-    }
-  }
 })
 
 function toggleDate(val) {
@@ -176,7 +147,7 @@ async function write() {
   const results = await Promise.all(
     selectedDates.value.flatMap(date =>
       rows.value.map(row =>
-        logDietRow({ ...row, 日期: date, 時間: mealTimes[row.餐別] || row.時間 })
+        logDietRow({ ...row, 日期: date })
           .then(() => true)
           .catch(e => { console.error(e); return false })
       )
@@ -216,7 +187,8 @@ function close() { modal.export.visible = false }
 
 <style scoped>
 .export-modal { max-height: 90dvh; display: flex; flex-direction: column; }
-.modal-body   { overflow-y: auto; }
+.modal-body   { flex: 1; min-height: 0; overflow-y: auto; }
+.modal-footer { padding: 12px 16px; border-top: 1px solid var(--c-border); flex-shrink: 0; }
 
 /* 預覽區 */
 .preview-label {
@@ -225,12 +197,11 @@ function close() { modal.export.visible = false }
   color: var(--c-text-sub, #666);
   margin-bottom: 6px;
   letter-spacing: .04em;
+  flex-shrink: 0;
 }
 .preview-table {
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
-  overflow-y: auto;
-  max-height: 240px;
 }
 .preview-row {
   display: flex;
@@ -258,45 +229,6 @@ function close() { modal.export.visible = false }
   color: var(--c-text-sub, #888);
   padding-left: 2px;
   word-break: break-all;
-}
-
-/* 用餐時間 */
-.time-toggle {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin: 12px 0 6px;
-  background: none;
-  border: none;
-  padding: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--c-text-sub, #666);
-  letter-spacing: .04em;
-  cursor: pointer;
-}
-.time-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 4px;
-}
-.time-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.time-label {
-  font-size: 13px;
-  width: 36px;
-  flex-shrink: 0;
-}
-.time-input {
-  padding: 4px 8px;
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius);
-  font-size: 13px;
-  background: #fff;
 }
 
 /* 日期選擇 */
