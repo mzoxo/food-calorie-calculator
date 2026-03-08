@@ -73,6 +73,23 @@ export async function loadFoods(forceRefresh = false) {
 }
 
 /**
+ * 寫入一筆飲食記錄
+ * @param {Object} data - logDiet 欄位（含日期）
+ */
+export async function logDietRow(data) {
+  const res = await fetch(getApiUrl(), {
+    method: 'POST',
+    // GAS 不支援 preflight，用 text/plain 避開 CORS
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ token: getToken(), action: 'logDiet', data }),
+  })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const json = await res.json()
+  if (json.error) throw new Error(json.error)
+  return json
+}
+
+/**
  * 查詢某日的飲食記錄
  * @param {string} date - 格式 yyyy/MM/dd
  * @returns {Array} 飲食記錄

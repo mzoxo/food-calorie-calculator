@@ -66,7 +66,7 @@
 import { computed, reactive } from 'vue'
 import { ChevronDown, ChevronRight, X, Trash2 } from 'lucide-vue-next'
 import FoodItem from './FoodItem.vue'
-import { store, removeFoodFromGroup, saveState } from '../store/index.js'
+import { store, removeFoodFromGroup, saveState, openAddFood } from '../store/index.js'
 import { subtotal, fmt } from '../utils/calc.js'
 
 // ── 當前群組 items ────────────────────────────────────
@@ -124,12 +124,7 @@ function clearGroup() {
 function openEdit(groupName, index) {
   const item = store.groups[groupName]?.[index]
   if (!item) return
-  store.modal.addFood.food      = item.food
-  store.modal.addFood.editMode  = true
-  store.modal.addFood.groupName = groupName
-  store.modal.addFood.index     = index
-  store.modal.addFood.note      = item.note || ''
-  store.modal.addFood.visible   = true
+  openAddFood(item.food, { editMode: true, groupName, index, note: item.note || '' })
 }
 
 function removePresetBlock(block) {

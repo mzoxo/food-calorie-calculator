@@ -13,7 +13,7 @@
     :visible="menuVisible"
     :anchor="menuAnchor"
     @close="menuVisible = false"
-    @open-profile="store.modal.profile.visible = true"
+    @open-profile="openModal('profile')"
     @refresh="onRefresh"
     @clear-all="onClearAll"
   />
@@ -36,9 +36,9 @@
 
   <!-- Footer -->
   <footer class="footer">
-    <button class="btn btn-outline" @click="store.modal.presets.visible = true">常用組合</button>
-    <button v-if="isConfigured()" class="btn btn-outline" @click="store.modal.import.visible = true">匯入</button>
-    <button class="btn btn-outline" @click="store.modal.export.visible = true">匯出</button>
+    <button class="btn btn-outline" @click="openModal('presets')">常用組合</button>
+    <button v-if="isConfigured()" class="btn btn-outline" @click="openModal('import')">匯入</button>
+    <button class="btn btn-outline" @click="openModal('export')">寫入記錄</button>
     <button class="btn btn-outline" @click="onClearCurrent">清除計算</button>
   </footer>
 
@@ -69,7 +69,7 @@ import ImportModal     from '../components/modals/ImportModal.vue'
 import ExportModal     from '../components/modals/ExportModal.vue'
 import ProfileModal    from '../components/modals/ProfileModal.vue'
 
-import { store, loadState, loadRecent, loadPresets, loadUserProfile, clearAll, saveState, showConfirm, initDefaultGroups } from '../store/index.js'
+import { store, loadState, loadRecent, loadPresets, loadUserProfile, clearAll, saveState, showConfirm, openModal, openAddFood } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
 import { isConfigured } from '../store/index.js'
 
@@ -89,12 +89,6 @@ onMounted(async () => {
   loadUserProfile()
   await loadFoods()
 })
-
-// ── 食材加入（暫時直接加，待 AddFoodModal 完成後改為開 modal）
-function openAddFood(food) {
-  store.modal.addFood.food    = food
-  store.modal.addFood.visible = true
-}
 
 // ── 重新整理 ──────────────────────────────────────────
 async function onRefresh() {

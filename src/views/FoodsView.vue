@@ -1,4 +1,5 @@
 <template>
+  <div class="foods-view">
   <!-- Header -->
   <header class="header">
     <button class="icon-btn" @click="$router.push('/')">
@@ -48,7 +49,6 @@
   <!-- 表格 -->
   <FoodTable
     v-else
-    :style="compareMode ? 'padding-bottom: 80px' : ''"
     :foods="filteredFoods"
     :sort-field="sortField"
     :sort-dir="sortDir"
@@ -119,12 +119,14 @@
       </div>
     </div>
   </Teleport>
+  </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
+import { useBasis } from '../composables/useBasis.js'
 import { ChevronLeft, X, Search, Pencil, RefreshCw } from 'lucide-vue-next'
-import { store } from '../store/index.js'
+import { store, openAddFood } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
 import FoodTable       from '../components/foods/FoodTable.vue'
 import FoodCompareBar  from '../components/foods/FoodCompareBar.vue'
@@ -134,13 +136,7 @@ import AddFoodModal    from '../components/modals/AddFoodModal.vue'
 // ── 基準設定 ───────────────────────────────────────────
 const basisType  = ref('gram')
 const basisValue = ref(100)
-const isDefault  = computed(() => basisType.value === 'gram' && basisValue.value === 100)
-
-const BASIS_LABELS = { gram: '克數', calories: '熱量', protein: '蛋白質', carb: '碳水', fat: '脂肪' }
-const basisUnit = computed(() => basisType.value === 'calories' ? 'kcal' : 'g')
-const basisDisplayText = computed(() =>
-  `每 ${basisValue.value}${basisUnit.value}（${BASIS_LABELS[basisType.value]}）`
-)
+const { isDefault, basisDisplayText } = useBasis(basisType, basisValue)
 
 const basisModalVisible = ref(false)
 const draftType  = ref('gram')
@@ -242,11 +238,6 @@ const filteredFoods = computed(() => {
 })
 
 // ── 加入計算頁 ─────────────────────────────────────────
-function openAddFood(food) {
-  store.modal.addFood.food    = food
-  store.modal.addFood.visible = true
-}
-
 // ── 比較模式 ───────────────────────────────────────────
 const compareMode    = ref(false)
 const selectedIds    = ref(new Set())

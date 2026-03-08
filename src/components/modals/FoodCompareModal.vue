@@ -108,8 +108,9 @@
 <script setup>
 import { ref } from 'vue'
 import { X } from 'lucide-vue-next'
-import { store } from '../../store/index.js'
-import { compute, fmt } from '../../utils/calc.js'
+import { openAddFood } from '../../store/index.js'
+import { fmt } from '../../utils/calc.js'
+import { useBasis } from '../../composables/useBasis.js'
 
 const props = defineProps({
   foods:            Array,
@@ -121,24 +122,7 @@ const emit = defineEmits(['close'])
 const basisType  = ref(props.initialBasisType)
 const basisValue = ref(props.initialBasisVal)
 
-const BASIS_KEY_MAP = {
-  calories: '每 100g 熱量',
-  protein:  '每 100g 蛋白質',
-  carb:     '每 100g 碳水',
-  fat:      '每 100g 脂肪',
-}
-
-function calcGrams(food) {
-  if (basisType.value === 'gram') return basisValue.value
-  const key   = BASIS_KEY_MAP[basisType.value]
-  const per100 = parseFloat(food[key]) || 0
-  if (!per100) return 0
-  return Math.round(basisValue.value / per100 * 100)
-}
-
-function calcNutrition(food) {
-  return compute(food, calcGrams(food), 'gram')
-}
+const { calcGrams, calcNutrition } = useBasis(basisType, basisValue)
 
 function isMax(food, key) {
   const val = calcNutrition(food)[key]
@@ -147,10 +131,7 @@ function isMax(food, key) {
 }
 
 function addFood(food) {
-  const grams = calcGrams(food)
-  store.modal.addFood.initQuantity = grams
-  store.modal.addFood.food         = food
-  store.modal.addFood.visible      = true
+  openAddFood(food, { initQuantity: calcGrams(food) })
   emit('close')
 }
 </script>

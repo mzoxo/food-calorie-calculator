@@ -38,8 +38,8 @@
         </thead>
         <tbody>
           <tr
-            v-for="food in foods"
-            :key="food['名稱']"
+            v-for="(food, idx) in foods"
+            :key="food['名稱'] != null ? food['名稱'] + '|' + (food['品牌'] || '') : idx"
             :class="{ 'row-selected': selectedIds.has(food['名稱']), 'row-compare': compareMode }"
             @click="compareMode ? $emit('toggle-select', food) : null"
           >
@@ -105,13 +105,13 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
 import {
   Plus, Pencil,
   Wheat, Milk, Apple, Droplets, Fish, Drumstick, Salad, Egg,
   FlaskConical, Bean, Cookie, Utensils, GlassWater, Soup, UtensilsCrossed,
 } from 'lucide-vue-next'
-import { compute } from '../../utils/calc.js'
+import { useBasis } from '../../composables/useBasis.js'
 
 const CATEGORY_ICONS = {
   '五穀根莖類': Wheat,
@@ -152,25 +152,7 @@ const SORT_COLS = [
   { field: 'fat',      label: '脂肪' },
 ]
 
-const BASIS_KEY_MAP = {
-  calories: '每 100g 熱量',
-  protein:  '每 100g 蛋白質',
-  carb:     '每 100g 碳水',
-  fat:      '每 100g 脂肪',
-}
-
-// 預設狀態：gram + 100g，直接顯示原始數據（由 parent 傳入 isDefault prop）
-
-function calcGrams(food) {
-  if (props.basisType === 'gram') return props.basisValue
-  const per100 = parseFloat(food[BASIS_KEY_MAP[props.basisType]]) || 0
-  if (!per100) return 0
-  return Math.round(props.basisValue / per100 * 100)
-}
-
-function calcNutrition(food) {
-  return compute(food, calcGrams(food), 'gram')
-}
+const { calcGrams, calcNutrition } = useBasis(toRef(props, 'basisType'), toRef(props, 'basisValue'))
 
 const totalCols = computed(() => {
   let n = 7 // name, cat, cal, carb, protein, fat, action

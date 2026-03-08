@@ -93,9 +93,9 @@
 
 ## Phase 8 — 技術債 / 重構
 
-- [ ] **`#app` flex 結構修正** — body 已是 flex column，但 `#app` 未繼承，導致子元件無法用 `flex: 1` 撐滿畫面，目前用 `height: calc` workaround（影響：foods-table-scroll 高度不準、foods-status-notice 無法撐滿）
-- [ ] **基準計算邏輯抽 composable** — `calcGrams`、`BASIS_KEY_MAP` 分散在 `FoodTable`、`FoodCompareModal`、`FoodsView`，應抽成 `useBasis()` composable 共用
-- [ ] **Modal 狀態統一管理** — `store.modal.*` 越來越多，考慮更系統化的管理方式
+- [x] **`#app` flex 結構修正** — body 已是 flex column，但 `#app` 未繼承，導致子元件無法用 `flex: 1` 撐滿畫面，目前用 `height: calc` workaround（影響：foods-table-scroll 高度不準、foods-status-notice 無法撐滿）
+- [x] **基準計算邏輯抽 composable** — `calcGrams`、`BASIS_KEY_MAP` 分散在 `FoodTable`、`FoodCompareModal`、`FoodsView`，應抽成 `useBasis()` composable 共用
+- [x] **Modal 狀態統一管理** — `store.modal.*` 越來越多，考慮更系統化的管理方式
 
 ---
 
