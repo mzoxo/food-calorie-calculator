@@ -1,6 +1,6 @@
 import { compute, subtotal, total, macroPct } from './calc.js'
 
-const MEAL_TIMES = { '早餐': '10:00', '午餐': '12:30', '晚餐': '19:30' }
+export const MEAL_TIMES = { '早餐': '10:00', '午餐': '12:30', '晚餐': '19:30' }
 
 function nowTime() {
   const d = new Date()

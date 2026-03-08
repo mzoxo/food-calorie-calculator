@@ -16,10 +16,19 @@
             <div class="preview-label">預覽（{{ rows.length }} 筆）</div>
             <div class="preview-table">
               <div v-for="(row, i) in rows" :key="i" class="preview-row">
-                <span class="meal-badge">{{ row.餐別 }} {{ row.時間 }}</span>
+                <span class="meal-badge">{{ row.餐別 }}</span>
                 <span class="preview-name">{{ row.食品名稱 }}</span>
                 <span class="preview-kcal">{{ row.熱量 }} kcal</span>
                 <span v-if="row.備註" class="preview-note">{{ row.備註 }}</span>
+              </div>
+            </div>
+
+            <!-- 用餐時間 -->
+            <div class="preview-label" style="margin-top:14px">用餐時間</div>
+            <div class="time-list">
+              <div v-for="g in activeGroups" :key="g" class="time-row">
+                <span class="time-label">{{ g }}</span>
+                <input type="time" v-model="mealTimes[g]" class="time-input" />
               </div>
             </div>
 
@@ -51,7 +60,7 @@
               @click="write"
             >
               {{ writing
-                ? '寫入中...'
+                ? `寫入中...`
                 : `寫入記錄（${selectedDates.length} 天 × ${rows.length} 筆）` }}
             </button>
           </template>
@@ -69,10 +78,10 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, ref, reactive, watch } from 'vue'
 import { X } from 'lucide-vue-next'
-import { store, isConfigured, showToast } from '../../store/index.js'
-import { generateExport, generateDietRows } from '../../utils/export.js'
+import { store, isConfigured, showToast, showConfirm } from '../../store/index.js'
+import { generateExport, generateDietRows, MEAL_TIMES } from '../../utils/export.js'
 import { logDietRow } from '../../utils/api.js'
 
 const modal = store.modal
@@ -91,6 +100,11 @@ function fmtDate(d) {
   return `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')}`
 }
 
+function nowTimeStr() {
+  const d = new Date()
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
 function quickDateEntry(daysOffset) {
   const d = new Date()
   d.setDate(d.getDate() + daysOffset)
@@ -106,13 +120,23 @@ const extraDateInput = ref('')
 const extraDates = ref([])
 const writing = ref(false)
 
-// 每次開啟 modal 時重設為今天
+// 用餐時間（每個餐別一個，可編輯）
+const mealTimes = reactive({})
+const activeGroups = computed(() => [...new Set(rows.value.map(r => r.餐別))])
+
+// 每次開啟 modal 時重設狀態
 watch(() => modal.export.visible, v => {
-  if (v) {
-    selectedDates.value = [fmtDate(new Date())]
-    extraDateInput.value = ''
-    extraDates.value = []
-    writing.value = false
+  if (!v) return
+  selectedDates.value = [fmtDate(new Date())]
+  extraDateInput.value = ''
+  extraDates.value = []
+  writing.value = false
+  // 初始化用餐時間
+  const nowStr = nowTimeStr()
+  for (const g of store.groupOrder) {
+    if (store.groups[g]?.length) {
+      mealTimes[g] = MEAL_TIMES[g] || nowStr
+    }
   }
 })
 
@@ -135,20 +159,30 @@ function addExtraDate() {
 
 async function write() {
   if (!selectedDates.value.length || !rows.value.length || writing.value) return
+
+  const total = selectedDates.value.length * rows.value.length
+  const ok = await showConfirm(
+    `確定寫入 ${selectedDates.value.length} 天 × ${rows.value.length} 筆，共 ${total} 筆記錄？`
+  )
+  if (!ok) return
+
   writing.value = true
-  let success = 0, fail = 0
-  for (const date of selectedDates.value) {
-    for (const row of rows.value) {
-      try {
-        await logDietRow({ ...row, 日期: date })
-        success++
-      } catch (e) {
-        fail++
-        console.error(e)
-      }
-    }
-  }
+
+  // 並行送出所有請求
+  const results = await Promise.all(
+    selectedDates.value.flatMap(date =>
+      rows.value.map(row =>
+        logDietRow({ ...row, 日期: date, 時間: mealTimes[row.餐別] || row.時間 })
+          .then(() => true)
+          .catch(e => { console.error(e); return false })
+      )
+    )
+  )
+
   writing.value = false
+  const success = results.filter(Boolean).length
+  const fail = results.length - success
+
   if (fail === 0) {
     showToast(`已寫入 ${success} 筆記錄`)
     close()
@@ -219,6 +253,31 @@ function close() { modal.export.visible = false }
   color: var(--c-text-sub, #888);
   padding-left: 2px;
   word-break: break-all;
+}
+
+/* 用餐時間 */
+.time-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.time-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.time-label {
+  font-size: 13px;
+  width: 36px;
+  flex-shrink: 0;
+}
+.time-input {
+  padding: 4px 8px;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  font-size: 13px;
+  background: #fff;
 }
 
 /* 日期選擇 */
