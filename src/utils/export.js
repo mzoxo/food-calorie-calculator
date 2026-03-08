@@ -46,13 +46,16 @@ export function generateDietRows(groups, groupOrder) {
     // 常用組合：合併為一筆，備註列出各食材
     for (const { presetName, items: presetItems } of presetMap.values()) {
       const n = subtotal(presetItems)
+      const totalGrams = presetItems.reduce((sum, item) => {
+        return sum + compute(item.food, item.quantity, item.mode).grams
+      }, 0)
       const note = presetItems.map(item => {
         const qty = item.mode === 'serving' ? `${item.quantity}份` : `${item.quantity}g`
         return `${item.food['名稱']}${qty}`
       }).join('+')
       rows.push({
         餐別: groupName, 時間: time,
-        食品名稱: presetName, 份量: '', 單位: '',
+        食品名稱: presetName, 份量: Math.round(totalGrams * 10) / 10, 單位: 'g',
         熱量: Math.round(n.calories),
         蛋白質: n.protein, 脂肪: n.fat, 碳水: n.carb, 纖維: n.fiber,
         備註: note,
