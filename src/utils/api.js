@@ -79,7 +79,8 @@ export async function loadFoods(forceRefresh = false) {
 export async function logDietRow(data) {
   const res = await fetch(getApiUrl(), {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    // GAS 不支援 preflight，用 text/plain 避開 CORS
+    headers: { 'Content-Type': 'text/plain' },
     body: JSON.stringify({ token: getToken(), action: 'logDiet', data }),
   })
   if (!res.ok) throw new Error(`API error: ${res.status}`)
