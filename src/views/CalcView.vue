@@ -38,7 +38,7 @@
   <footer class="footer">
     <button class="btn btn-outline" @click="openModal('presets')">常用組合</button>
     <button v-if="isConfigured()" class="btn btn-outline" @click="openModal('import')">匯入</button>
-    <button class="btn btn-outline" @click="openModal('export')">匯出</button>
+    <button class="btn btn-outline" @click="openModal('export')">寫入記錄</button>
     <button class="btn btn-outline" @click="onClearCurrent">清除計算</button>
   </footer>
 
