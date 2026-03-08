@@ -26,14 +26,16 @@
             <!-- 日期選擇 -->
             <div class="preview-label" style="margin-top:14px">選擇日期</div>
             <div class="date-list">
-              <label v-for="d in quickDates" :key="d.value" class="custom-checkbox">
-                <input type="checkbox" v-model="selectedDates" :value="d.value" />
-                <span class="checkbox-mark"></span>
+              <label v-for="d in quickDates" :key="d.value" class="date-option" @click="toggleDate(d.value)">
+                <span class="custom-checkbox" :class="{ checked: selectedDates.includes(d.value) }">
+                  <svg v-if="selectedDates.includes(d.value)" width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
                 <span>{{ d.label }}</span>
               </label>
-              <label v-for="d in extraDates" :key="d" class="custom-checkbox">
-                <input type="checkbox" v-model="selectedDates" :value="d" />
-                <span class="checkbox-mark"></span>
+              <label v-for="d in extraDates" :key="d" class="date-option" @click="toggleDate(d)">
+                <span class="custom-checkbox" :class="{ checked: selectedDates.includes(d) }">
+                  <svg v-if="selectedDates.includes(d)" width="10" height="10" viewBox="0 0 10 10"><polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
                 <span>{{ d }}</span>
               </label>
             </div>
@@ -113,6 +115,12 @@ watch(() => modal.export.visible, v => {
     writing.value = false
   }
 })
+
+function toggleDate(val) {
+  const idx = selectedDates.value.indexOf(val)
+  if (idx >= 0) selectedDates.value.splice(idx, 1)
+  else selectedDates.value.push(val)
+}
 
 function addExtraDate() {
   if (!extraDateInput.value) return
@@ -219,6 +227,14 @@ function close() { modal.export.visible = false }
   flex-direction: column;
   gap: 6px;
   margin-bottom: 10px;
+}
+.date-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
 }
 .date-add-row {
   display: flex;
