@@ -289,7 +289,10 @@ function startEdit(rec) {
     脂肪:     parseFloat(rec.脂肪)  || 0,
     纖維:     parseFloat(rec.纖維)  || 0,
   })
-  matchedFood.value = store.foods.find(f => f['名稱'] === rec.食品名稱) || null
+  matchedFood.value = store.foods.find(f => f['名稱'] === rec.食品名稱)
+    ?? store.foods.find(f => f['品牌'] && `${f['品牌']} ${f['名稱']}` === rec.食品名稱)
+    ?? store.foods.find(f => f['品牌'] && rec.食品名稱.includes(f['名稱']) && rec.食品名稱.includes(f['品牌']))
+    ?? null
 }
 
 function recalc() {
