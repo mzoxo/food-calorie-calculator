@@ -4,13 +4,14 @@
       <ChevronLeft :size="16" :stroke-width="1.5" />
     </button>
     <h1 class="header-title" :style="back ? 'position:absolute;left:50%;transform:translateX(-50%);pointer-events:none' : ''">
-      卡路里計算器
+      {{ title }}
     </h1>
-    <div class="header-actions">
+    <div v-if="!back" class="header-actions">
       <button ref="menuBtn" class="icon-btn" title="選單" @click="onMenu">
         <Menu :size="16" :stroke-width="1.5" />
       </button>
     </div>
+    <div v-else style="width:32px" />
   </header>
 </template>
 
@@ -19,7 +20,10 @@ import { ref } from 'vue'
 import { Menu, ChevronLeft } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
-defineProps({ back: { type: Boolean, default: false } })
+defineProps({
+  back:  { type: Boolean, default: false },
+  title: { type: String, default: '卡路里計算器' },
+})
 const emit    = defineEmits(['menu'])
 const menuBtn = ref(null)
 const router  = useRouter()

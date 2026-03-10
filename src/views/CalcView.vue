@@ -6,7 +6,7 @@
   </div>
 
   <!-- Header -->
-  <AppHeader :back="route.path === '/calc'" @menu="onMenuToggle" />
+  <AppHeader :back="route.path === '/calc'" :title="route.path === '/calc' ? '計算機' : '卡路里計算器'" @menu="onMenuToggle" />
 
   <!-- 右上角選單 -->
   <AppMenu
