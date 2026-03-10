@@ -1143,6 +1143,34 @@ select.input {
     transition: opacity 0.15s var(--ease);
 }
 
+/* ===== Diet Page ===== */
+.diet-view {
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.date-bar {
+    display: flex;
+    align-items: center;
+    padding: var(--gap-sm) var(--gap-lg);
+    background: var(--c-bg);
+    border-bottom: 1px solid var(--c-border-light);
+    position: sticky;
+    top: 49px;
+    z-index: 5;
+    flex-shrink: 0;
+}
+
+.diet-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    background: var(--c-bg);
+    padding: var(--gap-md) var(--gap-lg);
+}
+
 /* ===== Foods Page ===== */
 .foods-toolbar {
     display: flex;

@@ -270,23 +270,7 @@ load()
 </script>
 
 <style scoped>
-.diet-view {
-  display: flex;
-  flex-direction: column;
-  height: 100dvh;
-  background: var(--c-bg);
-}
-
 /* 日期列 */
-.date-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px var(--gap-md);
-  border-bottom: 1px solid var(--c-border);
-  background: var(--c-bg);
-  flex-shrink: 0;
-}
 .date-input {
   flex: 1;
   text-align: center;
@@ -296,13 +280,6 @@ load()
   font-weight: 500;
   color: var(--c-text);
   cursor: pointer;
-}
-
-/* 主內容 */
-.diet-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: var(--gap-md);
 }
 
 .state-msg {
