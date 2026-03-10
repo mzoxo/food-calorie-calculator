@@ -11,13 +11,13 @@
           <Plus :size="15" :stroke-width="1.5" />
           新增群組
         </button>
+        <button class="menu-item" @click="goToCalc">
+          <Calculator :size="15" :stroke-width="1.5" />
+          計算機
+        </button>
         <button class="menu-item" @click="goToFoods">
           <Database :size="15" :stroke-width="1.5" />
           食材資料庫
-        </button>
-        <button class="menu-item" @click="goToDiet">
-          <ClipboardList :size="15" :stroke-width="1.5" />
-          飲食記錄
         </button>
         <div class="menu-divider" />
         <button class="menu-item" @click="emit('refresh')">
@@ -36,7 +36,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Plus, User, RefreshCw, Eraser, Trash2, Database, ClipboardList } from 'lucide-vue-next'
+import { Plus, User, RefreshCw, Eraser, Trash2, Database, Calculator } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { store, showPrompt, showToast, saveState, initDefaultGroups } from '../store/index.js'
 
@@ -57,9 +57,9 @@ function goToFoods() {
   router.push('/foods')
 }
 
-function goToDiet() {
+function goToCalc() {
   emit('close')
-  router.push('/diet')
+  router.push('/calc')
 }
 
 async function onAddGroup() {

@@ -7,6 +7,7 @@ import { isConfigured } from './store/index.js'
 
 const routes = [
   { path: '/', component: CalcView },
+  { path: '/calc', component: CalcView },
   { path: '/login', component: LoginView },
   { path: '/foods', component: FoodsView },
   { path: '/diet', component: DietView },

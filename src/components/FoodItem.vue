@@ -74,12 +74,5 @@ const qtyLabel = computed(() =>
   opacity: 0.6;
 }
 
-.food-item-note {
-  margin-top: 3px;
-  font-size: 0.72rem;
-  color: var(--c-text-muted);
-  padding-left: 6px;
-  border-left: 2px solid var(--c-primary);
-  opacity: 0.8;
-}
+/* .food-item-note 已移至全域 style.css */
 </style>
