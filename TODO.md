@@ -99,6 +99,43 @@
 
 ---
 
+## Phase 9 — 飲食日記頁（DietView 重做）
+
+### 9-1 路由 & 導航
+- [x] `router.js` — 新增 `/diet` 路由
+- [x] `AppMenu.vue` — 新增「飲食記錄」選項（`isConfigured()` 才顯示）
+
+### 9-2 元件改造
+- [x] `NutritionTotal.vue` — 新增 optional prop `records`，有傳時改用 records 計算，無傳維持讀 `store.groups`（CalcView 不受影響）
+- [x] `GroupTabs.vue` — 新增 props：`modelValue`（activeGroup）、`counts`（各餐項目數 map）、`readonly`（隱藏右鍵選單/更名/刪除），DietView 傳 props，CalcView 不傳維持現有行為
+
+### 9-3 新 DietView 主體
+- [x] `DietView.vue` — 完整重寫，結構如下：
+  - AppHeader + AppMenu（同 CalcView）
+  - 日期導覽列（← 日期 →）
+  - BMR/TDEE 進度條（複用 NutritionTotal 上半段邏輯）
+  - GroupTabs（readonly 模式，顯示各餐項目數）
+  - 當前餐別小計 header（餐名 · kcal · 碳Xg · 蛋Xg · 脂Xg）
+  - 記錄列表（格式同 FoodItem：名稱 / 份量·碳·蛋·脂 / kcal / 刪除）
+  - NutritionTotal 圓圈（傳 records prop）
+  - 浮動 + 按鈕
+
+### 9-4 工具函式
+- [x] `utils/export.js` — 新增 `generatePresetNote(preset, servings)` 產生備註字串
+- [x] `utils/export.js` — 新增 `presetToRows(preset, servings, group, date)` 回傳 API rows（整組模式 1 筆，個別模式多筆）
+
+### 9-5 AddDietFoodModal（全新）
+- [x] `modals/AddDietFoodModal.vue` — 兩個 Tab：
+  - **搜尋食物**：搜尋食材 → 填份量 → 選餐別（預設當前 tab）→ 確認 → `logDietRow()`
+  - **常用組合**：
+    - 列出 `store.presets`
+    - 每個組合：整組 checkbox + 份數 input + 展開按鈕
+    - 整組打勾時個別項目 disabled，寫入 1 筆（食品名稱 = 組合名稱，備註 = 所有食材名稱+份量）
+    - 展開後個別打勾（整組未勾），每項各寫 1 筆
+    - 頂部餐別 select（預設當前 tab，可覆蓋）
+
+---
+
 ## 資料結構變更紀錄
 
 ### 群組 items（新增 note、presetName、presetId）
