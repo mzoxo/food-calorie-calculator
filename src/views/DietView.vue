@@ -31,7 +31,7 @@
       <template v-else>
         <!-- 當日總計 -->
         <div class="day-total">
-          <span class="total-kcal">{{ Math.round(dayTotal.calories) }} kcal</span>
+          <span class="total-kcal">{{ dayTotal.calories }} kcal</span>
           <span class="total-macro">碳水 {{ dayTotal.carb }}g</span>
           <span class="total-macro">蛋白質 {{ dayTotal.protein }}g</span>
           <span class="total-macro">脂肪 {{ dayTotal.fat }}g</span>
@@ -182,14 +182,19 @@ async function load() {
 }
 
 const dayTotal = computed(() => {
-  const r = v => Math.round(parseFloat(v) * 10) / 10 || 0
-  return records.value.reduce((acc, rec) => {
-    acc.calories += r(rec.熱量)
-    acc.carb     += r(rec.碳水)
-    acc.protein  += r(rec.蛋白質)
-    acc.fat      += r(rec.脂肪)
+  const sum = records.value.reduce((acc, rec) => {
+    acc.calories += parseFloat(rec.熱量)  || 0
+    acc.carb     += parseFloat(rec.碳水)  || 0
+    acc.protein  += parseFloat(rec.蛋白質) || 0
+    acc.fat      += parseFloat(rec.脂肪)  || 0
     return acc
   }, { calories: 0, carb: 0, protein: 0, fat: 0 })
+  return {
+    calories: Math.round(sum.calories).toLocaleString('zh-TW'),
+    carb:     Math.round(sum.carb     * 10) / 10,
+    protein:  Math.round(sum.protein  * 10) / 10,
+    fat:      Math.round(sum.fat      * 10) / 10,
+  }
 })
 
 // ── 編輯 ──────────────────────────────────────────────
