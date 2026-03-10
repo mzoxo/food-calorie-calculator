@@ -243,22 +243,25 @@ const mealRecords = computed(() =>
   records.value.filter(r => r.餐別 === activeGroup.value)
 )
 
-const mealTotal = computed(() =>
-  mealRecords.value.reduce((acc, rec) => {
+const mealTotal = computed(() => {
+  const s = mealRecords.value.reduce((acc, rec) => {
     acc.calories += parseFloat(rec.熱量)  || 0
     acc.carb     += parseFloat(rec.碳水)  || 0
     acc.protein  += parseFloat(rec.蛋白質) || 0
     acc.fat      += parseFloat(rec.脂肪)  || 0
     return acc
   }, { calories: 0, carb: 0, protein: 0, fat: 0 })
-)
+  return {
+    calories: Math.round(s.calories),
+    carb:     Math.round(s.carb    * 10) / 10,
+    protein:  Math.round(s.protein * 10) / 10,
+    fat:      Math.round(s.fat     * 10) / 10,
+  }
+})
 
-const dayTotal = computed(() =>
-  records.value.reduce((acc, rec) => {
-    acc.calories += parseFloat(rec.熱量) || 0
-    return acc
-  }, { calories: 0 })
-)
+const dayTotal = computed(() => ({
+  calories: Math.round(records.value.reduce((s, rec) => s + (parseFloat(rec.熱量) || 0), 0))
+}))
 
 function round1(v) { return Math.round((parseFloat(v) || 0) * 10) / 10 }
 

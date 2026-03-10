@@ -121,7 +121,7 @@ const props = defineProps({
 // ── 總計 ─────────────────────────────────────────────
 const t = computed(() => {
   if (props.records) {
-    return props.records.reduce((acc, rec) => {
+    const s = props.records.reduce((acc, rec) => {
       acc.calories += parseFloat(rec.熱量)  || 0
       acc.carb     += parseFloat(rec.碳水)  || 0
       acc.protein  += parseFloat(rec.蛋白質) || 0
@@ -129,6 +129,13 @@ const t = computed(() => {
       acc.fiber    += parseFloat(rec.纖維)  || 0
       return acc
     }, { calories: 0, carb: 0, protein: 0, fat: 0, fiber: 0 })
+    return {
+      calories: Math.round(s.calories),
+      carb:     Math.round(s.carb    * 10) / 10,
+      protein:  Math.round(s.protein * 10) / 10,
+      fat:      Math.round(s.fat     * 10) / 10,
+      fiber:    Math.round(s.fiber   * 10) / 10,
+    }
   }
   return total(store.groups)
 })
