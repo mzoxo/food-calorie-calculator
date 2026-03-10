@@ -92,6 +92,7 @@
                 class="input qty-input" @input="recalc" />
               <select v-model="editData.單位" class="input unit-select" @change="recalc">
                 <option>g</option>
+                <option>ml</option>
                 <option>份</option>
               </select>
             </div>
@@ -297,7 +298,7 @@ function startEdit(rec) {
 
 function recalc() {
   if (!matchedFood.value) return
-  const mode = editData.單位 === '份' ? 'serving' : 'gram'
+  const mode = editData.單位 === '份' ? 'serving' : 'gram'  // ml 視為 gram（密度≈1）
   const n = compute(matchedFood.value, editData.份量 || 0, mode)
   editData.熱量   = Math.round(n.calories)
   editData.碳水   = n.carb
