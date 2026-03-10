@@ -1496,7 +1496,9 @@ select.input {
     .foods-toolbar,
     .foods-table-wrap,
     .foods-status-notice,
-    .compare-bar {
+    .compare-bar,
+    .date-bar,
+    .diet-content {
         max-width: 500px;
         margin-left: auto;
         margin-right: auto;
