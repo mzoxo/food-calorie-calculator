@@ -1,14 +1,19 @@
 <template>
-  <div class="diet-view">
+  <!-- Header -->
+  <AppHeader @menu="onMenuToggle" />
 
-    <!-- Header -->
-    <header class="header">
-      <button class="icon-btn" @click="$router.push('/')">
-        <ChevronLeft :size="16" :stroke-width="1.5" />
-      </button>
-      <h1 class="header-title" style="position:absolute;left:50%;transform:translateX(-50%);pointer-events:none">飲食記錄</h1>
-      <div style="width:32px" />
-    </header>
+  <!-- 右上角選單 -->
+  <AppMenu
+    :visible="menuVisible"
+    :anchor="menuAnchor"
+    @close="menuVisible = false"
+    @open-profile="openModal('profile')"
+    @refresh="onRefresh"
+    @clear-all="() => {}"
+  />
+
+  <!-- 主內容 -->
+  <main class="main">
 
     <!-- 日期導覽列 -->
     <div class="date-bar">
@@ -21,142 +26,183 @@
       </button>
     </div>
 
-    <!-- 主內容 -->
-    <div class="diet-content">
+    <!-- BMR/TDEE 進度條（借用 NutritionTotal 的 bmr-panel 邏輯，獨立顯示） -->
+    <BmrPanel :calories="dayTotal.calories" />
 
-      <div v-if="loading" class="state-msg">載入中…</div>
+    <!-- 餐別 Tabs -->
+    <GroupTabs
+      v-model="activeGroup"
+      :counts="tabCounts"
+      :readonly="true"
+    />
 
-      <div v-else-if="!records.length" class="state-msg muted">這天沒有飲食記錄</div>
-
-      <template v-else>
-        <!-- 當日總計 -->
-        <div class="day-total">
-          <span class="total-kcal">{{ dayTotal.calories }} kcal</span>
-          <span class="total-macro">碳水 {{ dayTotal.carb }}g</span>
-          <span class="total-macro">蛋白質 {{ dayTotal.protein }}g</span>
-          <span class="total-macro">脂肪 {{ dayTotal.fat }}g</span>
-        </div>
-
-        <!-- 記錄列表 -->
-        <div class="record-list">
-          <div v-for="rec in records" :key="rec.列號" class="record-card">
-
-            <!-- 一般顯示 -->
-            <div v-if="editingRow !== rec.列號" class="record-row">
-              <div class="record-left">
-                <span class="meal-badge">{{ rec.餐別 }}</span>
-                <span v-if="rec.時間" class="record-time">{{ rec.時間 }}</span>
-              </div>
-              <div class="record-body">
-                <div class="record-name">{{ rec.食品名稱 }}</div>
-                <div class="record-sub">
-                  {{ rec.份量 }}{{ rec.單位 }} · {{ Math.round(rec.熱量) }} kcal
-                  <template v-if="rec.備註"> · {{ rec.備註 }}</template>
-                </div>
-              </div>
-              <div class="record-actions">
-                <button class="icon-btn" @click="startEdit(rec)">
-                  <Pencil :size="14" :stroke-width="1.5" />
-                </button>
-                <button class="icon-btn danger-btn" @click="deleteRecord(rec)">
-                  <Trash2 :size="14" :stroke-width="1.5" />
-                </button>
-              </div>
-            </div>
-
-            <!-- 編輯表單 -->
-            <div v-else class="record-form">
-              <div class="form-row">
-                <label class="form-label">食品名稱</label>
-                <input v-model="editData.食品名稱" class="input form-input" />
-              </div>
-              <div class="form-row">
-                <label class="form-label">份量</label>
-                <div class="qty-row">
-                  <input v-model.number="editData.份量" type="number" min="0" step="0.5"
-                    class="input qty-input" @input="recalc" />
-                  <select v-model="editData.單位" class="input unit-select" @change="recalc">
-                    <option>g</option>
-                    <option>份</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-row">
-                <label class="form-label">餐別</label>
-                <select v-model="editData.餐別" class="input form-input">
-                  <option v-for="g in store.groupOrder" :key="g">{{ g }}</option>
-                </select>
-              </div>
-              <div class="form-row">
-                <label class="form-label">時間</label>
-                <input v-model="editData.時間" type="time" class="input form-input" />
-              </div>
-              <div class="form-row">
-                <label class="form-label">備註</label>
-                <input v-model="editData.備註" class="input form-input" />
-              </div>
-
-              <!-- 營養素 -->
-              <div class="nutr-grid">
-                <div class="nutr-item">
-                  <span class="nutr-label">熱量</span>
-                  <input v-model.number="editData.熱量" type="number" class="input nutr-input"
-                    :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
-                </div>
-                <div class="nutr-item">
-                  <span class="nutr-label">碳水</span>
-                  <input v-model.number="editData.碳水" type="number" class="input nutr-input"
-                    :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
-                </div>
-                <div class="nutr-item">
-                  <span class="nutr-label">蛋白質</span>
-                  <input v-model.number="editData.蛋白質" type="number" class="input nutr-input"
-                    :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
-                </div>
-                <div class="nutr-item">
-                  <span class="nutr-label">脂肪</span>
-                  <input v-model.number="editData.脂肪" type="number" class="input nutr-input"
-                    :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
-                </div>
-              </div>
-              <div v-if="matchedFood" class="form-hint">
-                已比對食材庫，修改份量自動重算
-              </div>
-              <div v-else class="form-hint warn">
-                未比對到食材庫，請手動填入營養素
-              </div>
-
-              <div class="form-actions">
-                <button class="btn btn-ghost" @click="cancelEdit">取消</button>
-                <button class="btn btn-primary" @click="saveEdit" :disabled="saving">
-                  {{ saving ? '儲存中…' : '儲存' }}
-                </button>
-              </div>
-            </div>
-
-          </div>
-        </div>
-      </template>
+    <!-- 當餐小計 header -->
+    <div v-if="mealTotal.calories > 0" class="meal-summary">
+      <span class="meal-summary-name">{{ activeGroup }}</span>
+      <span class="meal-summary-kcal">{{ fmt(mealTotal.calories) }} kcal</span>
+      <span class="meal-summary-macro">碳 {{ mealTotal.carb }}g</span>
+      <span class="meal-summary-macro">蛋 {{ mealTotal.protein }}g</span>
+      <span class="meal-summary-macro">脂 {{ mealTotal.fat }}g</span>
     </div>
 
-  </div>
+    <!-- 載入中 -->
+    <div v-if="loading" class="state-msg">載入中…</div>
+
+    <!-- 空餐別 -->
+    <div v-else-if="!mealRecords.length" class="state-msg muted">這餐還沒有記錄</div>
+
+    <!-- 記錄列表（格式同 FoodItem） -->
+    <div v-else class="group-items">
+      <div v-for="rec in mealRecords" :key="rec.列號">
+
+        <!-- 一般顯示 -->
+        <div v-if="editingRow !== rec.列號" class="food-item">
+          <div class="food-item-info">
+            <div class="food-item-name">
+              {{ rec.食品名稱 }}
+              <button class="icon-btn name-edit-btn" @click="startEdit(rec)">
+                <Pencil :size="14" :stroke-width="1.5" />
+              </button>
+            </div>
+            <div class="food-item-detail">
+              {{ rec.份量 }}{{ rec.單位 }}
+              · 碳 {{ round1(rec.碳水) }}g
+              · 蛋 {{ round1(rec.蛋白質) }}g
+              · 脂 {{ round1(rec.脂肪) }}g
+              <template v-if="parseFloat(rec.纖維) > 0"> · 纖 {{ round1(rec.纖維) }}g</template>
+            </div>
+            <div v-if="rec.備註" class="food-item-note">{{ rec.備註 }}</div>
+          </div>
+          <span class="food-item-cal">{{ fmt(parseFloat(rec.熱量)) }} kcal</span>
+          <button class="icon-btn food-item-remove" @click="deleteRecord(rec)">
+            <X :size="14" :stroke-width="2" />
+          </button>
+        </div>
+
+        <!-- 編輯表單 -->
+        <div v-else class="record-form">
+          <div class="form-row">
+            <label class="form-label">食品名稱</label>
+            <input v-model="editData.食品名稱" class="input form-input" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">份量</label>
+            <div class="qty-row">
+              <input v-model.number="editData.份量" type="number" min="0" step="0.5"
+                class="input qty-input" @input="recalc" />
+              <select v-model="editData.單位" class="input unit-select" @change="recalc">
+                <option>g</option>
+                <option>份</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label class="form-label">餐別</label>
+            <select v-model="editData.餐別" class="input form-input">
+              <option v-for="g in store.groupOrder" :key="g">{{ g }}</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label class="form-label">時間</label>
+            <input v-model="editData.時間" type="time" class="input form-input" />
+          </div>
+          <div class="form-row">
+            <label class="form-label">備註</label>
+            <input v-model="editData.備註" class="input form-input" />
+          </div>
+
+          <!-- 營養素 -->
+          <div class="nutr-grid">
+            <div class="nutr-item">
+              <span class="nutr-label">熱量</span>
+              <input v-model.number="editData.熱量" type="number" class="input nutr-input"
+                :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
+            </div>
+            <div class="nutr-item">
+              <span class="nutr-label">碳水</span>
+              <input v-model.number="editData.碳水" type="number" class="input nutr-input"
+                :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
+            </div>
+            <div class="nutr-item">
+              <span class="nutr-label">蛋白質</span>
+              <input v-model.number="editData.蛋白質" type="number" class="input nutr-input"
+                :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
+            </div>
+            <div class="nutr-item">
+              <span class="nutr-label">脂肪</span>
+              <input v-model.number="editData.脂肪" type="number" class="input nutr-input"
+                :class="{ readonly: !!matchedFood }" :readonly="!!matchedFood" />
+            </div>
+          </div>
+          <div v-if="matchedFood" class="form-hint">已比對食材庫，修改份量自動重算</div>
+          <div v-else class="form-hint warn">未比對到食材庫，請手動填入營養素</div>
+
+          <div class="form-actions">
+            <button class="btn btn-ghost" @click="cancelEdit">取消</button>
+            <button class="btn btn-primary" @click="saveEdit" :disabled="saving">
+              {{ saving ? '儲存中…' : '儲存' }}
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- 總計圓圈（BMR 已由上方 BmrPanel 顯示，此處隱藏） -->
+    <NutritionTotal :records="records" :hide-bmr="true" />
+
+  </main>
+
+  <!-- 浮動新增按鈕 -->
+  <button class="fab" @click="openAddModal">
+    <Plus :size="22" :stroke-width="2" />
+  </button>
+
+  <!-- 彈窗 -->
+  <ProfileModal />
+  <AddDietFoodModal
+    v-if="showAddModal"
+    :date="apiDate"
+    :default-group="activeGroup"
+    @close="showAddModal = false"
+    @added="onRecordAdded"
+  />
 </template>
 
 <script setup>
 import { ref, computed, reactive } from 'vue'
-import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-vue-next'
-import { store, showToast, showConfirm, loadState, DEFAULT_GROUPS } from '../store/index.js'
+import { ChevronLeft, ChevronRight, Pencil, X, Plus } from 'lucide-vue-next'
+import AppHeader      from '../components/AppHeader.vue'
+import AppMenu        from '../components/AppMenu.vue'
+import GroupTabs      from '../components/GroupTabs.vue'
+import NutritionTotal from '../components/NutritionTotal.vue'
+import BmrPanel       from '../components/BmrPanel.vue'
+import ProfileModal   from '../components/modals/ProfileModal.vue'
+import AddDietFoodModal from '../components/modals/AddDietFoodModal.vue'
+
+import { store, openModal, loadState, showToast, showConfirm } from '../store/index.js'
 import { fetchDiet, updateDietRow, deleteDietRow, loadFoods } from '../utils/api.js'
-import { compute } from '../utils/calc.js'
+import { compute, fmt } from '../utils/calc.js'
+
+// ── 選單 ──────────────────────────────────────────────
+const menuVisible = ref(false)
+const menuAnchor  = ref(null)
+function onMenuToggle(rect) {
+  menuAnchor.value  = rect
+  menuVisible.value = !menuVisible.value
+}
+async function onRefresh() {
+  menuVisible.value = false
+  await loadFoods(true)
+}
 
 // ── 日期 ──────────────────────────────────────────────
 function todayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
-function toApiDate(s) { return s.replace(/-/g, '/') }
-
 const dateInput = ref(todayStr())
+const apiDate   = computed(() => dateInput.value.replace(/-/g, '/'))
 
 function shiftDate(days) {
   const d = new Date(dateInput.value)
@@ -164,6 +210,17 @@ function shiftDate(days) {
   dateInput.value = d.toISOString().slice(0, 10)
   load()
 }
+
+// ── 餐別 Tab ──────────────────────────────────────────
+const activeGroup = ref(store.groupOrder[0] || '早餐')
+
+const tabCounts = computed(() => {
+  const map = {}
+  store.groupOrder.forEach(g => {
+    map[g] = records.value.filter(r => r.餐別 === g).length
+  })
+  return map
+})
 
 // ── 記錄 ──────────────────────────────────────────────
 const records = ref([])
@@ -173,7 +230,7 @@ async function load() {
   loading.value = true
   cancelEdit()
   try {
-    records.value = await fetchDiet(toApiDate(dateInput.value))
+    records.value = await fetchDiet(apiDate.value)
   } catch (e) {
     showToast('載入失敗')
     console.error(e)
@@ -182,21 +239,28 @@ async function load() {
   }
 }
 
-const dayTotal = computed(() => {
-  const sum = records.value.reduce((acc, rec) => {
+const mealRecords = computed(() =>
+  records.value.filter(r => r.餐別 === activeGroup.value)
+)
+
+const mealTotal = computed(() =>
+  mealRecords.value.reduce((acc, rec) => {
     acc.calories += parseFloat(rec.熱量)  || 0
     acc.carb     += parseFloat(rec.碳水)  || 0
     acc.protein  += parseFloat(rec.蛋白質) || 0
     acc.fat      += parseFloat(rec.脂肪)  || 0
     return acc
   }, { calories: 0, carb: 0, protein: 0, fat: 0 })
-  return {
-    calories: Math.round(sum.calories).toLocaleString('zh-TW'),
-    carb:     Math.round(sum.carb     * 10) / 10,
-    protein:  Math.round(sum.protein  * 10) / 10,
-    fat:      Math.round(sum.fat      * 10) / 10,
-  }
-})
+)
+
+const dayTotal = computed(() =>
+  records.value.reduce((acc, rec) => {
+    acc.calories += parseFloat(rec.熱量) || 0
+    return acc
+  }, { calories: 0 })
+)
+
+function round1(v) { return Math.round((parseFloat(v) || 0) * 10) / 10 }
 
 // ── 編輯 ──────────────────────────────────────────────
 const editingRow  = ref(null)
@@ -216,11 +280,11 @@ function startEdit(rec) {
     餐別:     rec.餐別,
     時間:     rec.時間 || '',
     備註:     rec.備註 || '',
-    熱量:     parseFloat(rec.熱量) || 0,
-    碳水:     parseFloat(rec.碳水) || 0,
+    熱量:     parseFloat(rec.熱量)  || 0,
+    碳水:     parseFloat(rec.碳水)  || 0,
     蛋白質:   parseFloat(rec.蛋白質) || 0,
-    脂肪:     parseFloat(rec.脂肪) || 0,
-    纖維:     parseFloat(rec.纖維) || 0,
+    脂肪:     parseFloat(rec.脂肪)  || 0,
+    纖維:     parseFloat(rec.纖維)  || 0,
   })
   matchedFood.value = store.foods.find(f => f['名稱'] === rec.食品名稱) || null
 }
@@ -270,6 +334,14 @@ async function deleteRecord(rec) {
   }
 }
 
+// ── 新增 Modal ────────────────────────────────────────
+const showAddModal = ref(false)
+function openAddModal() { showAddModal.value = true }
+
+function onRecordAdded(newRecs) {
+  records.value.push(...newRecs)
+}
+
 // ── 初始化 ────────────────────────────────────────────
 if (!store.groupOrder.length) loadState()
 if (!store.foods.length) loadFoods()
@@ -278,6 +350,12 @@ load()
 
 <style scoped>
 /* 日期列 */
+.date-bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 0;
+}
 .date-input {
   flex: 1;
   text-align: center;
@@ -289,69 +367,36 @@ load()
   cursor: pointer;
 }
 
-.state-msg {
-  text-align: center;
-  padding: 48px 0;
-  font-size: 14px;
-}
-.state-msg.muted { color: var(--c-text-muted, #aaa); }
-
-/* 總計 */
-.day-total {
+/* 當餐小計 */
+.meal-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 12px;
   align-items: baseline;
-  padding: 10px 12px;
-  background: var(--c-surface);
-  border-radius: var(--radius);
-  margin-bottom: 10px;
+  gap: 4px 8px;
+  padding: 6px 0 4px;
   font-size: 13px;
 }
-.total-kcal { font-weight: 600; font-size: 15px; color: var(--c-primary); }
-.total-macro { color: var(--c-text-sub, #666); }
+.meal-summary-name { font-weight: 600; color: var(--c-text); }
+.meal-summary-kcal { font-weight: 600; color: var(--c-primary); }
+.meal-summary-macro { color: var(--c-text-sub, #666); }
 
-/* 記錄卡片 */
-.record-list { display: flex; flex-direction: column; gap: 8px; }
-.record-card {
-  background: var(--c-bg);
-  border: 1px solid var(--c-border);
-  border-radius: var(--radius);
-  overflow: hidden;
-}
-
-/* 一般顯示列 */
-.record-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 10px 10px 12px;
-}
-.record-left {
+/* 記錄列（FoodItem 格式） */
+.group-items {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
+  gap: 1px;
 }
-.record-time {
-  font-size: 11px;
-  color: var(--c-text-sub, #888);
+
+.name-edit-btn {
+  opacity: 0.25;
+  color: var(--c-text-muted);
+  padding: 0;
+  min-width: unset;
+  min-height: unset;
+  transition: opacity var(--duration) var(--ease);
 }
-.meal-badge {
-  font-size: 11px;
-  background: var(--c-surface);
-  border: 1px solid var(--c-border);
-  border-radius: 4px;
-  padding: 2px 6px;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.record-body { flex: 1; min-width: 0; }
-.record-name { font-size: 14px; font-weight: 500; }
-.record-sub  { font-size: 12px; color: var(--c-text-sub, #888); margin-top: 1px; }
-.record-actions { display: flex; gap: 4px; flex-shrink: 0; }
-.danger-btn { color: var(--c-danger, #e53e3e); }
+.name-edit-btn svg { width: 12px; height: 12px; }
+.food-item:hover .name-edit-btn { opacity: 0.6; }
 
 /* 編輯表單 */
 .record-form {
@@ -360,12 +405,10 @@ load()
   flex-direction: column;
   gap: 8px;
   background: var(--c-surface);
+  border-radius: var(--radius);
+  margin: 4px 0;
 }
-.form-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.form-row { display: flex; align-items: center; gap: 8px; }
 .form-label {
   font-size: 12px;
   color: var(--c-text-sub, #666);
@@ -376,28 +419,37 @@ load()
 .qty-row { display: flex; gap: 6px; flex: 1; }
 .qty-input { flex: 1; }
 .unit-select { width: 58px; }
-
-/* 營養素 */
-.nutr-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
+.nutr-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .nutr-item { display: flex; flex-direction: column; gap: 3px; }
 .nutr-label { font-size: 11px; color: var(--c-text-sub, #888); }
 .nutr-input { text-align: right; }
 .nutr-input.readonly { background: var(--c-surface); color: var(--c-text-sub, #888); }
-
-.form-hint {
-  font-size: 11px;
-  color: var(--c-text-sub, #888);
-}
+.form-hint { font-size: 11px; color: var(--c-text-sub, #888); }
 .form-hint.warn { color: var(--c-danger, #e53e3e); }
+.form-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 4px; }
 
-.form-actions {
+/* 狀態訊息 */
+.state-msg { text-align: center; padding: 32px 0; font-size: 14px; }
+.state-msg.muted { color: var(--c-text-muted, #aaa); }
+
+/* 浮動按鈕 */
+.fab {
+  position: fixed;
+  bottom: 24px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--c-primary);
+  color: #fff;
+  border: none;
+  cursor: pointer;
   display: flex;
-  gap: 8px;
-  justify-content: flex-end;
-  margin-top: 4px;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: background var(--duration) var(--ease), transform var(--duration) var(--ease);
+  z-index: 10;
 }
+.fab:hover { background: var(--c-primary-dark, #3d5c4a); transform: scale(1.05); }
 </style>

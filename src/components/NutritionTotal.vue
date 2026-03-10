@@ -4,8 +4,8 @@
       <h2 class="section-title">總計</h2>
     </div>
 
-    <!-- BMR / TDEE 進度條 -->
-    <div class="bmr-panel">
+    <!-- BMR / TDEE 進度條（DietView 用獨立 BmrPanel，傳 hideBmr 隱藏此區） -->
+    <div v-if="!hideBmr" class="bmr-panel">
       <!-- 有個人資料：顯示 BMR / TDEE / 目標 -->
       <template v-if="bmr">
         <div class="bmr-inline-row">
@@ -114,6 +114,8 @@ const MEAL_COLORS = ['#7C9EDE','#F4C454','#F08CA5','#8ECA99','#BCA0E6','#F4A674'
 const props = defineProps({
   // 傳入時使用雲端記錄計算（DietView），不傳時讀 store.groups（CalcView）
   records: { type: Array, default: null },
+  // DietView 已有獨立 BmrPanel，傳 true 隱藏此處的 BMR 進度條
+  hideBmr: { type: Boolean, default: false },
 })
 
 // ── 總計 ─────────────────────────────────────────────
