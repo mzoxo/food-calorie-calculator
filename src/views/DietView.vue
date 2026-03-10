@@ -338,8 +338,8 @@ async function deleteRecord(rec) {
 const showAddModal = ref(false)
 function openAddModal() { showAddModal.value = true }
 
-function onRecordAdded(newRecs) {
-  records.value.push(...newRecs)
+function onRecordAdded() {
+  load()
 }
 
 // ── 初始化 ────────────────────────────────────────────
