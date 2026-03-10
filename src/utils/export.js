@@ -81,6 +81,67 @@ export function generateDietRows(groups, groupOrder) {
 }
 
 /**
+ * 產生常用組合整組寫入時的備註字串
+ * @param {Array}  items    - preset.items
+ * @param {number} servings - 份數倍率
+ * @returns {string} 例："雞蛋2份+吐司100g+牛奶200g"
+ */
+export function generatePresetNote(items, servings = 1) {
+  return items.map(item => {
+    const qty = item.mode === 'serving'
+      ? `${item.quantity * servings}份`
+      : `${item.quantity * servings}g`
+    return `${item.food['名稱']}${qty}`
+  }).join('+')
+}
+
+/**
+ * 將常用組合轉換成要寫入 Sheet 的 row 陣列
+ * @param {Object}  preset       - { name, items }
+ * @param {Array}   selectedItems - 選中的 items（個別模式只傳部分）
+ * @param {number}  servings     - 份數倍率
+ * @param {string}  group        - 餐別
+ * @param {string}  date         - yyyy/MM/dd
+ * @param {boolean} asSingle     - true = 整組寫 1 筆；false = 個別各寫 1 筆
+ * @returns {Array} rows（不含日期以外欄位已填好）
+ */
+export function presetToRows(preset, selectedItems, servings, group, date, asSingle) {
+  const time = MEAL_TIMES[group] || nowTime()
+
+  if (asSingle) {
+    const scaledItems = selectedItems.map(item => ({
+      ...item, quantity: item.quantity * servings,
+    }))
+    const n = subtotal(scaledItems)
+    const totalGrams = scaledItems.reduce(
+      (sum, item) => sum + compute(item.food, item.quantity, item.mode).grams, 0
+    )
+    return [{
+      日期: date, 餐別: group, 時間: time,
+      食品名稱: preset.name,
+      份量: Math.round(totalGrams * 10) / 10, 單位: 'g',
+      熱量: Math.round(n.calories),
+      蛋白質: n.protein, 脂肪: n.fat, 碳水: n.carb, 纖維: n.fiber,
+      備註: generatePresetNote(selectedItems, servings),
+    }]
+  }
+
+  return selectedItems.map(item => {
+    const qty = item.quantity * servings
+    const n = compute(item.food, qty, item.mode)
+    return {
+      日期: date, 餐別: group, 時間: time,
+      食品名稱: item.food['名稱'],
+      份量: qty,
+      單位: item.mode === 'serving' ? '份' : 'g',
+      熱量: Math.round(n.calories),
+      蛋白質: n.protein, 脂肪: n.fat, 碳水: n.carb, 纖維: n.fiber,
+      備註: item.note || '',
+    }
+  })
+}
+
+/**
  * 產生複製用文字（含每個食材的完整營養素）
  * @param {Object} groups
  * @param {Array}  groupOrder
