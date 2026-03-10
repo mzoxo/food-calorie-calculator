@@ -144,7 +144,7 @@
 <script setup>
 import { ref, computed, reactive } from 'vue'
 import { ChevronLeft, ChevronRight, Pencil, Trash2 } from 'lucide-vue-next'
-import { store, showToast, showConfirm } from '../store/index.js'
+import { store, showToast, showConfirm, loadState, DEFAULT_GROUPS } from '../store/index.js'
 import { fetchDiet, updateDietRow, deleteDietRow, loadFoods } from '../utils/api.js'
 import { compute } from '../utils/calc.js'
 
@@ -265,6 +265,7 @@ async function deleteRecord(rec) {
 }
 
 // ── 初始化 ────────────────────────────────────────────
+if (!store.groupOrder.length) loadState()
 if (!store.foods.length) loadFoods()
 load()
 </script>
