@@ -43,13 +43,14 @@
 
             <!-- 一般顯示 -->
             <div v-if="editingRow !== rec.列號" class="record-row">
-              <span class="meal-badge">{{ rec.餐別 }}</span>
+              <div class="record-left">
+                <span class="meal-badge">{{ rec.餐別 }}</span>
+                <span v-if="rec.時間" class="record-time">{{ rec.時間 }}</span>
+              </div>
               <div class="record-body">
                 <div class="record-name">{{ rec.食品名稱 }}</div>
                 <div class="record-sub">
-                  {{ rec.份量 }}{{ rec.單位 }}
-                  <template v-if="rec.時間"> · {{ rec.時間 }}</template>
-                  · {{ Math.round(rec.熱量) }} kcal
+                  {{ rec.份量 }}{{ rec.單位 }} · {{ Math.round(rec.熱量) }} kcal
                   <template v-if="rec.備註"> · {{ rec.備註 }}</template>
                 </div>
               </div>
@@ -325,6 +326,17 @@ load()
   align-items: center;
   gap: 8px;
   padding: 10px 10px 10px 12px;
+}
+.record-left {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  flex-shrink: 0;
+}
+.record-time {
+  font-size: 11px;
+  color: var(--c-text-sub, #888);
 }
 .meal-badge {
   font-size: 11px;
