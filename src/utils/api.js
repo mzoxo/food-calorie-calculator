@@ -90,6 +90,39 @@ export async function logDietRow(data) {
 }
 
 /**
+ * 修改某列飲食記錄
+ * @param {number} rowNumber - getDiet 回傳的列號
+ * @param {Object} data      - 要更新的欄位
+ */
+export async function updateDietRow(rowNumber, data) {
+  const res = await fetch(getApiUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ token: getToken(), action: 'updateDiet', rowNumber, data }),
+  })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const json = await res.json()
+  if (json.error) throw new Error(json.error)
+  return json
+}
+
+/**
+ * 刪除某列飲食記錄
+ * @param {number} rowNumber - getDiet 回傳的列號
+ */
+export async function deleteDietRow(rowNumber) {
+  const res = await fetch(getApiUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ token: getToken(), action: 'deleteRow', sheet: '飲食記錄', rowNumber }),
+  })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const json = await res.json()
+  if (json.error) throw new Error(json.error)
+  return json
+}
+
+/**
  * 查詢某日的飲食記錄
  * @param {string} date - 格式 yyyy/MM/dd
  * @returns {Array} 飲食記錄
