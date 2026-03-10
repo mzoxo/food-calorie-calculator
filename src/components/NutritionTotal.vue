@@ -111,8 +111,25 @@ import { total, macroPct, subtotal, calcBMR, calcTDEE, calcTarget, fmt } from '.
 
 const MEAL_COLORS = ['#7C9EDE','#F4C454','#F08CA5','#8ECA99','#BCA0E6','#F4A674','#78C4CD','#D990B0']
 
+const props = defineProps({
+  // 傳入時使用雲端記錄計算（DietView），不傳時讀 store.groups（CalcView）
+  records: { type: Array, default: null },
+})
+
 // ── 總計 ─────────────────────────────────────────────
-const t   = computed(() => total(store.groups))
+const t = computed(() => {
+  if (props.records) {
+    return props.records.reduce((acc, rec) => {
+      acc.calories += parseFloat(rec.熱量)  || 0
+      acc.carb     += parseFloat(rec.碳水)  || 0
+      acc.protein  += parseFloat(rec.蛋白質) || 0
+      acc.fat      += parseFloat(rec.脂肪)  || 0
+      acc.fiber    += parseFloat(rec.纖維)  || 0
+      return acc
+    }, { calories: 0, carb: 0, protein: 0, fat: 0, fiber: 0 })
+  }
+  return total(store.groups)
+})
 const pct = computed(() => macroPct(t.value))
 
 // ── BMR / TDEE ────────────────────────────────────────
@@ -158,6 +175,17 @@ const macroConic = computed(() => {
 // ── 餐次圓餅圖 ────────────────────────────────────────
 const mealBreakdown = computed(() => {
   const totalCal = t.value.calories || 1
+  if (props.records) {
+    return store.groupOrder
+      .map((name, i) => {
+        const cal = props.records
+          .filter(r => r.餐別 === name)
+          .reduce((s, r) => s + (parseFloat(r.熱量) || 0), 0)
+        if (!cal) return null
+        return { name, calories: cal, pct: Math.round(cal / totalCal * 100), color: MEAL_COLORS[i % MEAL_COLORS.length] }
+      })
+      .filter(Boolean)
+  }
   return store.groupOrder
     .map((name, i) => {
       const items = store.groups[name] || []

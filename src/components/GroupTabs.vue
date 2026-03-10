@@ -5,16 +5,16 @@
         v-for="name in store.groupOrder"
         :key="name"
         class="tab"
-        :class="{ active: store.activeGroup === name }"
-        @click="store.activeGroup = name"
-        @contextmenu.prevent="openMenu(name, $event)"
-        @touchstart="onTouchStart(name)"
+        :class="{ active: activeGroupValue === name }"
+        @click="onTabClick(name)"
+        @contextmenu.prevent="!readonly && openMenu(name, $event)"
+        @touchstart="!readonly && onTouchStart(name)"
         @touchend="onTouchEnd"
         @touchmove="onTouchEnd"
       >
-        {{ name }}<span v-if="store.groups[name]?.length" class="tab-count">({{ store.groups[name].length }})</span>
+        {{ name }}<span v-if="tabCount(name)" class="tab-count">({{ tabCount(name) }})</span>
         <span
-          v-if="!DEFAULT_GROUPS.includes(name)"
+          v-if="!readonly && !DEFAULT_GROUPS.includes(name)"
           class="tab-remove"
           @click.stop="quickDelete(name)"
         >×</span>
@@ -44,6 +44,30 @@
 import { reactive, computed } from 'vue'
 import { Pencil, Trash2 } from 'lucide-vue-next'
 import { store, saveState, showPrompt, showConfirm, showToast, DEFAULT_GROUPS } from '../store/index.js'
+
+const props = defineProps({
+  // 傳入時由父元件控制 activeGroup（DietView），不傳時讀寫 store.activeGroup（CalcView）
+  modelValue: { type: String, default: null },
+  // 各餐項目數 map，不傳時讀 store.groups[name].length
+  counts: { type: Object, default: null },
+  // 唯讀模式：隱藏右鍵選單、更名、刪除
+  readonly: { type: Boolean, default: false },
+})
+const emit = defineEmits(['update:modelValue'])
+
+const activeGroupValue = computed(() =>
+  props.modelValue !== null ? props.modelValue : store.activeGroup
+)
+
+function onTabClick(name) {
+  if (props.modelValue !== null) emit('update:modelValue', name)
+  else store.activeGroup = name
+}
+
+function tabCount(name) {
+  if (props.counts) return props.counts[name] || 0
+  return store.groups[name]?.length || 0
+}
 
 // ── Context menu ──────────────────────────────────────
 const menu = reactive({ visible: false, group: '', x: 0, y: 0 })
