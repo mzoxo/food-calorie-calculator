@@ -6,7 +6,7 @@
   </div>
 
   <!-- Header -->
-  <AppHeader @menu="onMenuToggle" />
+  <AppHeader :back="route.path === '/calc'" @menu="onMenuToggle" />
 
   <!-- 右上角選單 -->
   <AppMenu
@@ -54,6 +54,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import AppHeader      from '../components/AppHeader.vue'
 import AppMenu        from '../components/AppMenu.vue'
 import SearchBox      from '../components/SearchBox.vue'
@@ -73,6 +74,7 @@ import { store, loadState, loadRecent, loadPresets, loadUserProfile, clearAll, s
 import { loadFoods } from '../utils/api.js'
 import { isConfigured } from '../store/index.js'
 
+const route       = useRoute()
 const menuVisible = ref(false)
 const menuAnchor  = ref(null)
 
