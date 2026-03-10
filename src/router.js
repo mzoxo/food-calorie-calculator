@@ -18,6 +18,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  if (to.path === '/' && isConfigured()) return '/diet'
   if ((to.path === '/foods' || to.path === '/diet') && !isConfigured()) return '/'
 })
 
