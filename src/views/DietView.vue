@@ -47,7 +47,9 @@
     </div>
 
     <!-- 載入中 -->
-    <div v-if="loading" class="state-msg">載入中…</div>
+    <div v-if="loading" class="state-msg">
+      <div class="loading-spinner" style="margin: 0 auto;" />
+    </div>
 
     <!-- 空餐別 -->
     <div v-else-if="!mealRecords.length" class="state-msg muted">這餐還沒有記錄</div>

@@ -43,7 +43,9 @@
   </div>
 
   <!-- 載入中 / 無資料 -->
-  <div v-if="store.loading" class="foods-status-notice">載入食材資料中…</div>
+  <div v-if="store.loading" class="foods-status-notice">
+    <div class="loading-spinner" style="margin: 0 auto;" />
+  </div>
   <div v-else-if="!store.foods.length" class="foods-status-notice">無法載入食材資料，請確認 API 設定或網路連線</div>
 
   <!-- 表格 -->
