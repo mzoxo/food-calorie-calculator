@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <div class="overlay" @click.self="$emit('close')">
+    <div class="overlay" @click.self="!submitting && $emit('close')">
       <div class="modal add-diet-modal">
         <div v-if="submitting" class="submitting-overlay">
           <div class="loading-spinner" />
