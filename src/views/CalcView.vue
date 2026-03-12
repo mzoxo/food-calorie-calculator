@@ -89,9 +89,9 @@ function onMenuToggle(rect) {
 onMounted(async () => {
   loadState()
   loadRecent()
-  loadPresets()
   loadUserProfile()
   await loadFoods()
+  await loadPresets()
 })
 
 // ── 重新整理 ──────────────────────────────────────────

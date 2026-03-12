@@ -135,3 +135,32 @@ export async function fetchDiet(date) {
   if (json.error) throw new Error(json.error)
   return json.records || []
 }
+
+/**
+ * 從 API 拉取常用組合
+ * @returns {Array} presets 陣列
+ */
+export async function fetchPresets() {
+  const url = `${getApiUrl()}?token=${getToken()}&action=getPresets`
+  const res = await fetch(url)
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const json = await res.json()
+  if (json.error) throw new Error(json.error)
+  return json.presets || []
+}
+
+/**
+ * 將常用組合同步到 API
+ * @param {Array} presets
+ */
+export async function syncPresets(presets) {
+  const res = await fetch(getApiUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify({ token: getToken(), action: 'savePresets', presets }),
+  })
+  if (!res.ok) throw new Error(`API error: ${res.status}`)
+  const json = await res.json()
+  if (json.error) throw new Error(json.error)
+  return json
+}

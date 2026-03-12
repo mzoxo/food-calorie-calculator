@@ -95,13 +95,45 @@ export function loadRecent() {
 
 export function savePresets() {
   localStorage.setItem(KEYS.PRESETS, JSON.stringify(store.presets))
+  // 同步到雲端（fire-and-forget）
+  if (isConfigured()) {
+    import('../utils/api.js').then(({ syncPresets }) => {
+      syncPresets(store.presets).catch(e => console.warn('雲端同步失敗', e))
+    })
+  }
 }
 
-export function loadPresets() {
+export async function loadPresets() {
+  // 先從 localStorage 載入（避免白畫面）
   try {
     store.presets = JSON.parse(localStorage.getItem(KEYS.PRESETS)) || []
   } catch {
     store.presets = []
+  }
+
+  if (!isConfigured()) return
+
+  // 有設定 API 時，從雲端拉取最新資料
+  try {
+    const { fetchPresets } = await import('../utils/api.js')
+    const apiPresets = await fetchPresets()
+
+    // 補全 food 物件（API 只回傳 名稱+品牌，需從 store.foods 取完整資料）
+    const enriched = apiPresets.map(preset => ({
+      ...preset,
+      items: preset.items.map(item => {
+        const full = store.foods.find(f =>
+          f['名稱'] === item.food?.['名稱'] &&
+          (f['品牌'] || '') === (item.food?.['品牌'] || '')
+        )
+        return { ...item, food: full || item.food }
+      }),
+    }))
+
+    store.presets = enriched
+    localStorage.setItem(KEYS.PRESETS, JSON.stringify(enriched))
+  } catch (e) {
+    console.warn('無法從雲端載入常用組合，使用本地資料', e)
   }
 }
 
