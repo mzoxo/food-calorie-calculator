@@ -37,6 +37,7 @@
                 <X :size="14" :stroke-width="2" />
               </button>
             </div>
+            <RecentFoods v-if="!query" @select="pickFood" />
             <ul v-if="searchResults.length" class="search-results">
               <li
                 v-for="food in searchResults"
@@ -177,11 +178,11 @@
 <script setup>
 import { ref, computed, reactive, watch, nextTick } from 'vue'
 import { X, ChevronLeft, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-vue-next'
-import { store } from '../../store/index.js'
+import { store, showToast, addToRecent } from '../../store/index.js'
 import { compute } from '../../utils/calc.js'
 import { presetToRows } from '../../utils/export.js'
 import { logDietRow } from '../../utils/api.js'
-import { showToast } from '../../store/index.js'
+import RecentFoods from '../RecentFoods.vue'
 
 const props = defineProps({
   date:         { type: String, required: true },  // yyyy/MM/dd
@@ -267,6 +268,7 @@ async function confirmFood() {
       纖維: n.fiber,
       備註: foodNote.value.trim(),
     })
+    addToRecent(selectedFood.value)
     showToast('已加入')
     emit('added')
     // 回到搜尋狀態，方便繼續加入
