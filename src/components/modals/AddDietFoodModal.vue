@@ -360,7 +360,6 @@ nextTick(() => searchEl.value?.focus())
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 /* Tabs */
@@ -389,7 +388,6 @@ nextTick(() => searchEl.value?.focus())
 
 .modal-body {
   flex: 1;
-  min-height: 0;
   overflow-y: auto;
   padding: 12px 16px;
   display: flex;
@@ -411,7 +409,8 @@ nextTick(() => searchEl.value?.focus())
   padding: 0;
   border: 1px solid var(--c-border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-y: auto;
+  max-height: 280px;
 }
 .result-item {
   padding: 8px 12px;
