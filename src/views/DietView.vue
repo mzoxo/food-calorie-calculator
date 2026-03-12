@@ -45,11 +45,11 @@
 
     <!-- 當餐小計 header -->
     <div v-if="mealTotal.calories > 0" class="meal-summary">
-      <span class="meal-summary-name">{{ activeGroup }}</span>
       <span class="meal-summary-kcal">{{ fmt(mealTotal.calories) }} kcal</span>
       <span class="meal-summary-macro">碳 {{ mealTotal.carb }}g</span>
       <span class="meal-summary-macro">蛋 {{ mealTotal.protein }}g</span>
       <span class="meal-summary-macro">脂 {{ mealTotal.fat }}g</span>
+      <span v-if="mealTotal.fiber > 0" class="meal-summary-macro">纖 {{ mealTotal.fiber }}g</span>
     </div>
 
     <!-- 空餐別 -->
@@ -256,13 +256,15 @@ const mealTotal = computed(() => {
     acc.carb     += parseFloat(rec.碳水)  || 0
     acc.protein  += parseFloat(rec.蛋白質) || 0
     acc.fat      += parseFloat(rec.脂肪)  || 0
+    acc.fiber    += parseFloat(rec.纖維)  || 0
     return acc
-  }, { calories: 0, carb: 0, protein: 0, fat: 0 })
+  }, { calories: 0, carb: 0, protein: 0, fat: 0, fiber: 0 })
   return {
     calories: Math.round(s.calories),
     carb:     Math.round(s.carb    * 10) / 10,
     protein:  Math.round(s.protein * 10) / 10,
     fat:      Math.round(s.fat     * 10) / 10,
+    fiber:    Math.round(s.fiber   * 10) / 10,
   }
 })
 
@@ -387,10 +389,11 @@ load()
   flex-wrap: wrap;
   align-items: baseline;
   gap: 4px 8px;
-  padding: 6px 0 4px;
+  padding: 8px 12px;
   font-size: 13px;
+  background: var(--c-surface);
+  border-radius: var(--radius);
 }
-.meal-summary-name { font-weight: 600; color: var(--c-text); }
 .meal-summary-kcal { font-weight: 600; color: var(--c-primary); }
 .meal-summary-macro { color: var(--c-text-sub, #666); }
 

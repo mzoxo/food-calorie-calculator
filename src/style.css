@@ -703,6 +703,7 @@ select.input {
     gap: 0;
     flex: 1;
     min-width: 0;
+    justify-content: center;
 }
 
 .tab {
