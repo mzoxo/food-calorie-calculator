@@ -183,7 +183,7 @@ import BmrPanel       from '../components/BmrPanel.vue'
 import ProfileModal   from '../components/modals/ProfileModal.vue'
 import AddDietFoodModal from '../components/modals/AddDietFoodModal.vue'
 
-import { store, openModal, loadState, showToast, showConfirm } from '../store/index.js'
+import { store, openModal, loadState, loadUserProfile, showToast, showConfirm } from '../store/index.js'
 import { fetchDiet, updateDietRow, deleteDietRow, loadFoods } from '../utils/api.js'
 import { compute, fmt } from '../utils/calc.js'
 
@@ -353,6 +353,7 @@ function onRecordAdded() {
 
 // ── 初始化 ────────────────────────────────────────────
 if (!store.groupOrder.length) loadState()
+loadUserProfile()
 if (!store.foods.length) loadFoods()
 load()
 </script>
