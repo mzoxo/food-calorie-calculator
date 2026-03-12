@@ -249,6 +249,13 @@ function adjustQty(dir) {
   quantity.value = Math.max(0, +(quantity.value + dir * step).toFixed(1))
 }
 
+const MEAL_TIMES = { '早餐': '10:30', '午餐': '12:30', '晚餐': '19:30' }
+function getMealTime(group) {
+  if (MEAL_TIMES[group]) return MEAL_TIMES[group]
+  const now = new Date()
+  return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
+}
+
 async function confirmFood() {
   if (!selectedFood.value || quantity.value <= 0 || submitting.value) return
   submitting.value = true
@@ -257,7 +264,7 @@ async function confirmFood() {
     await logDietRow({
       日期: props.date,
       餐別: selectedGroup.value,
-      時間: '',
+      時間: getMealTime(selectedGroup.value),
       食品名稱: selectedFood.value['名稱'],
       份量: quantity.value,
       單位: mode.value === 'serving' ? '份' : 'g',
@@ -485,6 +492,6 @@ nextTick(() => searchEl.value?.focus())
 .state-msg.muted { color: var(--c-text-muted); }
 
 /* 共用 */
-.field { display: flex; align-items: center; gap: 8px; }
-.field-label { font-size: 12px; color: var(--c-text-sub, #666); width: 36px; flex-shrink: 0; }
+.field { display: flex; flex-direction: column; gap: 4px; }
+.field-label { font-size: 12px; color: var(--c-text-sub, #666); }
 </style>
