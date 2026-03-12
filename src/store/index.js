@@ -115,8 +115,14 @@ export async function loadPresets() {
 
   // 有設定 API 時，從雲端拉取最新資料
   try {
-    const { fetchPresets } = await import('../utils/api.js')
+    const { fetchPresets, syncPresets } = await import('../utils/api.js')
     const apiPresets = await fetchPresets()
+
+    if (apiPresets.length === 0 && store.presets.length > 0) {
+      // 雲端是空的，本地有資料 → 把本地資料上傳到雲端
+      syncPresets(store.presets).catch(e => console.warn('初次同步失敗', e))
+      return
+    }
 
     // 補全 food 物件（API 只回傳 名稱+品牌，需從 store.foods 取完整資料）
     const enriched = apiPresets.map(preset => ({
