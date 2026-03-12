@@ -1,5 +1,5 @@
 <template>
-  <main class="login-page">
+  <div class="container login-page">
     <div class="login-card">
       <h1 class="login-title">設定</h1>
 
@@ -31,7 +31,7 @@
 
       <button class="btn btn-danger-outline btn-block" @click="onClearAll">清除所有資料</button>
     </div>
-  </main>
+  </div>
 </template>
 
 <script setup>
@@ -68,6 +68,7 @@ function onClearAll() {
   justify-content: center;
   padding: var(--gap-lg);
   background: var(--c-bg);
+  box-sizing: border-box;
 }
 
 .login-card {
