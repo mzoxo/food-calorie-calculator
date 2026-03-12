@@ -13,10 +13,10 @@
   />
 
   <!-- 主內容 -->
-  <main class="main">
+  <main class="main container">
 
     <!-- 日期導覽列 -->
-    <div class="date-bar">
+    <div class="date-bar container">
       <button class="icon-btn" @click="shiftDate(-1)">
         <ChevronLeft :size="16" :stroke-width="1.5" />
       </button>

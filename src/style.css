@@ -1526,15 +1526,7 @@ select.input {
 /* ===== RWD ===== */
 @media (min-width: 600px) {
 
-    .header,
-    .main,
-    .footer,
-    .foods-toolbar,
-    .foods-table-wrap,
-    .foods-status-notice,
-    .compare-bar,
-    .date-bar,
-    .diet-content {
+    .container {
         max-width: 500px;
         margin-left: auto;
         margin-right: auto;

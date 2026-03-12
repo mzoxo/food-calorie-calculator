@@ -19,7 +19,7 @@
   />
 
   <!-- 主內容 -->
-  <main class="main">
+  <main class="main container">
     <!-- 搜尋 + 最近使用 -->
     <SearchBox @select="openAddFood" />
     <RecentFoods @select="openAddFood" />
@@ -35,7 +35,7 @@
   </main>
 
   <!-- Footer -->
-  <footer class="footer">
+  <footer class="footer container">
     <button class="btn btn-outline" @click="openModal('presets')">常用組合</button>
     <button v-if="isConfigured()" class="btn btn-outline" @click="openModal('import')">匯入</button>
     <button class="btn btn-outline" @click="openModal('export')">寫入記錄</button>
