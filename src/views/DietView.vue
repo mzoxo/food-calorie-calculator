@@ -10,7 +10,6 @@
     @close="menuVisible = false"
     @open-profile="openModal('profile')"
     @refresh="onRefresh"
-    @clear-all="() => {}"
   />
 
   <!-- 主內容 -->
