@@ -467,7 +467,7 @@ load()
 }
 .form-input { flex: 1; }
 .qty-row { display: flex; gap: 6px; flex: 1; }
-.qty-input { flex: 1; }
+.qty-input { flex: 1; font-size: 0.85rem; }
 .unit-select { width: 58px; }
 .nutr-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .nutr-item { display: flex; flex-direction: column; gap: 3px; }
