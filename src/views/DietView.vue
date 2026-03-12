@@ -453,7 +453,7 @@ load()
 .fab {
   position: fixed;
   bottom: 24px;
-  right: 20px;
+  right: calc(max(0px, (100vw - 500px) / 2) + 20px);
   width: 48px;
   height: 48px;
   border-radius: 50%;
