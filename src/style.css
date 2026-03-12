@@ -948,8 +948,10 @@ select.input {
 .footer {
     position: fixed;
     bottom: 0;
-    left: 0;
-    right: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 500px;
     display: flex;
     gap: var(--gap-xs);
     padding: var(--gap-sm) var(--gap-lg);

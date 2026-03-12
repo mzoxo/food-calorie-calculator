@@ -1,7 +1,7 @@
 <template>
-  <div class="foods-view">
+  <div class="foods-view container">
   <!-- Header -->
-  <header class="header container">
+  <header class="header">
     <button class="icon-btn" @click="$router.push('/')">
       <ChevronLeft :size="16" :stroke-width="1.5" />
     </button>
@@ -22,7 +22,7 @@
   </header>
 
   <!-- 工具列 -->
-  <div class="foods-toolbar container">
+  <div class="foods-toolbar">
     <div class="foods-toolbar-row">
       <select v-model="selectedCategory" class="input foods-category-select">
         <option value="">全部分類</option>
@@ -43,8 +43,8 @@
   </div>
 
   <!-- 載入中 / 無資料 -->
-  <div v-if="store.loading" class="foods-status-notice container">載入食材資料中…</div>
-  <div v-else-if="!store.foods.length" class="foods-status-notice container">無法載入食材資料，請確認 API 設定或網路連線</div>
+  <div v-if="store.loading" class="foods-status-notice">載入食材資料中…</div>
+  <div v-else-if="!store.foods.length" class="foods-status-notice">無法載入食材資料，請確認 API 設定或網路連線</div>
 
   <!-- 表格 -->
   <FoodTable

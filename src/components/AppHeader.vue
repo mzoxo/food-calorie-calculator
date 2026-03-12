@@ -1,5 +1,5 @@
 <template>
-  <header class="header container">
+  <header class="header">
     <button v-if="back" class="icon-btn" @click="router.back()">
       <ChevronLeft :size="16" :stroke-width="1.5" />
     </button>

@@ -5,42 +5,44 @@
     <span class="loading-text">載入食材資料中…</span>
   </div>
 
-  <!-- Header -->
-  <AppHeader :back="route.path === '/calc'" :title="route.path === '/calc' ? '計算機' : '卡路里計算器'" @menu="onMenuToggle" />
+  <div class="container">
+    <!-- Header -->
+    <AppHeader :back="route.path === '/calc'" :title="route.path === '/calc' ? '計算機' : '卡路里計算器'" @menu="onMenuToggle" />
 
-  <!-- 右上角選單 -->
-  <AppMenu
-    :visible="menuVisible"
-    :anchor="menuAnchor"
-    @close="menuVisible = false"
-    @open-profile="openModal('profile')"
-    @refresh="onRefresh"
-    @clear-all="onClearAll"
-  />
+    <!-- 右上角選單 -->
+    <AppMenu
+      :visible="menuVisible"
+      :anchor="menuAnchor"
+      @close="menuVisible = false"
+      @open-profile="openModal('profile')"
+      @refresh="onRefresh"
+      @clear-all="onClearAll"
+    />
 
-  <!-- 主內容 -->
-  <main class="main container">
-    <!-- 搜尋 + 最近使用 -->
-    <SearchBox @select="openAddFood" />
-    <RecentFoods @select="openAddFood" />
+    <!-- 主內容 -->
+    <main class="main">
+      <!-- 搜尋 + 最近使用 -->
+      <SearchBox @select="openAddFood" />
+      <RecentFoods @select="openAddFood" />
 
-    <!-- 群組 Tab -->
-    <GroupTabs />
+      <!-- 群組 Tab -->
+      <GroupTabs />
 
-    <!-- 群組食材 -->
-    <GroupItems />
+      <!-- 群組食材 -->
+      <GroupItems />
 
-    <!-- 總計 + BMR/TDEE -->
-    <NutritionTotal />
-  </main>
+      <!-- 總計 + BMR/TDEE -->
+      <NutritionTotal />
+    </main>
 
-  <!-- Footer -->
-  <footer class="footer container">
-    <button class="btn btn-outline" @click="openModal('presets')">常用組合</button>
-    <button v-if="isConfigured()" class="btn btn-outline" @click="openModal('import')">匯入</button>
-    <button class="btn btn-outline" @click="openModal('export')">寫入記錄</button>
-    <button class="btn btn-outline" @click="onClearCurrent">清除計算</button>
-  </footer>
+    <!-- Footer -->
+    <footer class="footer">
+      <button class="btn btn-outline" @click="openModal('presets')">常用組合</button>
+      <button v-if="isConfigured()" class="btn btn-outline" @click="openModal('import')">匯入</button>
+      <button class="btn btn-outline" @click="openModal('export')">寫入記錄</button>
+      <button class="btn btn-outline" @click="onClearCurrent">清除計算</button>
+    </footer>
+  </div>
 
   <!-- ── Modals ── -->
   <AddFoodModal />

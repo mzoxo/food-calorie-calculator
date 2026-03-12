@@ -1,5 +1,5 @@
 <template>
-  <div class="compare-bar container">
+  <div class="compare-bar">
     <span class="compare-bar-text">已選 {{ count }} / 5 項</span>
     <button
       class="btn btn-primary"

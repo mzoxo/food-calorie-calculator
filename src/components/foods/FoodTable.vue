@@ -1,5 +1,5 @@
 <template>
-  <div class="foods-table-wrap container">
+  <div class="foods-table-wrap">
     <div class="foods-count-row">
       <span class="foods-count">共 {{ foods.length }} 項</span>
       <div style="display: flex; align-items: center;">

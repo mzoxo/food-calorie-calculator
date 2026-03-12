@@ -1,4 +1,5 @@
 <template>
+  <div class="container">
   <!-- Header -->
   <AppHeader @menu="onMenuToggle" />
 
@@ -13,10 +14,10 @@
   />
 
   <!-- 主內容 -->
-  <main class="main container">
+  <main class="main">
 
     <!-- 日期導覽列 -->
-    <div class="date-bar container">
+    <div class="date-bar">
       <button class="icon-btn" @click="shiftDate(-1)">
         <ChevronLeft :size="16" :stroke-width="1.5" />
       </button>
@@ -153,6 +154,7 @@
     <NutritionTotal :records="records" :hide-bmr="true" />
 
   </main>
+  </div>
 
   <!-- 浮動新增按鈕 -->
   <button class="fab" @click="openAddModal">
