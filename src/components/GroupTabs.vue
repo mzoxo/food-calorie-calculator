@@ -19,6 +19,7 @@
           @click.stop="quickDelete(name)"
         >×</span>
       </button>
+      <button v-if="!readonly" class="tab tab-add" @click="onAddGroup" title="新增群組">+</button>
     </div>
   </div>
 
@@ -43,7 +44,7 @@
 <script setup>
 import { reactive, computed } from 'vue'
 import { Pencil, Trash2 } from 'lucide-vue-next'
-import { store, saveState, showPrompt, showConfirm, showToast, DEFAULT_GROUPS } from '../store/index.js'
+import { store, saveState, showPrompt, showConfirm, showToast, DEFAULT_GROUPS, ensureGroup } from '../store/index.js'
 
 const props = defineProps({
   // 傳入時由父元件控制 activeGroup（DietView），不傳時讀寫 store.activeGroup（CalcView）
@@ -67,6 +68,18 @@ function onTabClick(name) {
 function tabCount(name) {
   if (props.counts) return props.counts[name] || 0
   return store.groups[name]?.length || 0
+}
+
+// ── 新增群組 ──────────────────────────────────────────
+async function onAddGroup() {
+  const name = await showPrompt('新增群組', '')
+  if (!name?.trim()) return
+  const trimmed = name.trim()
+  if (store.groupOrder.includes(trimmed)) { showToast('群組名稱已存在'); return }
+  ensureGroup(trimmed)
+  store.groupOrder.push(trimmed)
+  store.activeGroup = trimmed
+  saveState()
 }
 
 // ── Context menu ──────────────────────────────────────
@@ -157,6 +170,13 @@ async function deleteGroup() {
 </script>
 
 <style scoped>
+.tab-add {
+  color: var(--c-text-muted);
+  font-size: 1rem;
+  padding: 4px 8px;
+  min-width: unset;
+}
+
 .tab-remove {
   margin-left: 3px;
   font-size: 0.75rem;

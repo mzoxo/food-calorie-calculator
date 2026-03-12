@@ -7,10 +7,6 @@
           <User :size="15" :stroke-width="1.5" />
           個人資料
         </button>
-        <button class="menu-item" @click="onAddGroup">
-          <Plus :size="15" :stroke-width="1.5" />
-          新增群組
-        </button>
         <button class="menu-item" @click="goToCalc">
           <Calculator :size="15" :stroke-width="1.5" />
           計算機
@@ -24,11 +20,6 @@
           <RefreshCw :size="15" :stroke-width="1.5" />
           重新抓取食材
         </button>
-        <div class="menu-divider" />
-        <button class="menu-item danger" @click="emit('clear-all')">
-          <Trash2 :size="15" :stroke-width="1.5" />
-          重設
-        </button>
       </div>
     </transition>
   </Teleport>
@@ -36,9 +27,8 @@
 
 <script setup>
 import { computed } from 'vue'
-import { Plus, User, RefreshCw, Eraser, Trash2, Database, Calculator } from 'lucide-vue-next'
+import { User, RefreshCw, Database, Calculator } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
-import { store, showPrompt, showToast, saveState, initDefaultGroups } from '../store/index.js'
 
 const props = defineProps({ visible: Boolean, anchor: Object })
 const router = useRouter()
@@ -50,7 +40,7 @@ const menuStyle = computed(() => {
     right: `${window.innerWidth - props.anchor.right}px`,
   }
 })
-const emit  = defineEmits(['close', 'open-profile', 'refresh', 'clear-all'])
+const emit  = defineEmits(['close', 'open-profile', 'refresh'])
 
 function goToFoods() {
   emit('close')
@@ -60,21 +50,6 @@ function goToFoods() {
 function goToCalc() {
   emit('close')
   router.push('/calc')
-}
-
-async function onAddGroup() {
-  emit('close')
-  const name = await showPrompt('新增群組', '')
-  if (!name?.trim()) return
-  const trimmed = name.trim()
-  if (store.groupOrder.includes(trimmed)) {
-    showToast('群組名稱已存在')
-    return
-  }
-  store.groups[trimmed]    = []
-  store.groupOrder.push(trimmed)
-  store.activeGroup = trimmed
-  saveState()
 }
 </script>
 

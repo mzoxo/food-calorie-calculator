@@ -16,7 +16,6 @@
       @close="menuVisible = false"
       @open-profile="openModal('profile')"
       @refresh="onRefresh"
-      @clear-all="onClearAll"
     />
 
     <!-- 主內容 -->
@@ -72,7 +71,7 @@ import ImportModal     from '../components/modals/ImportModal.vue'
 import ExportModal     from '../components/modals/ExportModal.vue'
 import ProfileModal    from '../components/modals/ProfileModal.vue'
 
-import { store, enrichPresets, clearAll, saveState, showConfirm, openModal, openAddFood } from '../store/index.js'
+import { store, enrichPresets, saveState, showConfirm, openModal, openAddFood } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
 import { isConfigured } from '../store/index.js'
 
@@ -106,10 +105,4 @@ async function onClearCurrent() {
   saveState()
 }
 
-async function onClearAll() {
-  menuVisible.value = false
-  const ok = await showConfirm('清除所有資料（含常用組合、最近使用、快取）？')
-  if (!ok) return
-  clearAll()
-}
 </script>
