@@ -27,6 +27,12 @@
       </button>
     </div>
 
+    <!-- 載入中 -->
+    <div v-if="loading" class="state-msg">
+      <div class="loading-spinner" style="margin: 0 auto;" />
+    </div>
+
+    <template v-else>
     <!-- BMR/TDEE 進度條（借用 NutritionTotal 的 bmr-panel 邏輯，獨立顯示） -->
     <BmrPanel :calories="dayTotal.calories" />
 
@@ -46,13 +52,8 @@
       <span class="meal-summary-macro">脂 {{ mealTotal.fat }}g</span>
     </div>
 
-    <!-- 載入中 -->
-    <div v-if="loading" class="state-msg">
-      <div class="loading-spinner" style="margin: 0 auto;" />
-    </div>
-
     <!-- 空餐別 -->
-    <div v-else-if="!mealRecords.length" class="state-msg muted">這餐還沒有記錄</div>
+    <div v-if="!mealRecords.length" class="state-msg muted">這餐還沒有記錄</div>
 
     <!-- 記錄列表（格式同 FoodItem） -->
     <div v-else class="group-items">
@@ -154,6 +155,7 @@
 
     <!-- 總計圓圈（BMR 已由上方 BmrPanel 顯示，此處隱藏） -->
     <NutritionTotal :records="records" :hide-bmr="true" />
+    </template>
 
   </main>
   </div>
