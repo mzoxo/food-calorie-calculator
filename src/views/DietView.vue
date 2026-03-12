@@ -403,9 +403,10 @@ load()
   position: relative;
 }
 .date-text {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  color: var(--c-text);
 }
 .date-input-hidden {
   position: absolute;
