@@ -2,6 +2,9 @@
   <Teleport to="body">
     <div class="overlay" @click.self="$emit('close')">
       <div class="modal add-diet-modal">
+        <div v-if="submitting" class="submitting-overlay">
+          <div class="loading-spinner" />
+        </div>
 
         <!-- Header -->
         <div class="modal-header">
@@ -367,6 +370,17 @@ nextTick(() => searchEl.value?.focus())
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+.submitting-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  border-radius: var(--radius-lg);
 }
 
 /* Tabs */
