@@ -23,7 +23,7 @@
       <button class="date-display" @click="openDatePicker">
         <Calendar :size="14" :stroke-width="1.5" />
         <span class="date-text">{{ formattedDate }}</span>
-        <input ref="dateInputRef" type="date" v-model="dateInput" class="date-input-hidden" @change="load" />
+        <input ref="dateInputRef" type="date" v-model="dateInput" class="date-input-hidden" @change="dateInput || (dateInput = todayStr()); load()" />
       </button>
       <button class="icon-btn" @click="shiftDate(1)">
         <ChevronRight :size="16" :stroke-width="1.5" />
