@@ -124,23 +124,27 @@ export async function loadPresets() {
       return
     }
 
-    // 補全 food 物件（API 只回傳 名稱+品牌，需從 store.foods 取完整資料）
-    const enriched = apiPresets.map(preset => ({
-      ...preset,
-      items: preset.items.map(item => {
-        const full = store.foods.find(f =>
-          f['名稱'] === item.food?.['名稱'] &&
-          (f['品牌'] || '') === (item.food?.['品牌'] || '')
-        )
-        return { ...item, food: full || item.food }
-      }),
-    }))
-
-    store.presets = enriched
-    localStorage.setItem(KEYS.PRESETS, JSON.stringify(enriched))
+    store.presets = apiPresets
+    localStorage.setItem(KEYS.PRESETS, JSON.stringify(apiPresets))
+    enrichPresets()
   } catch (e) {
     console.warn('無法從雲端載入常用組合，使用本地資料', e)
   }
+}
+
+// 用 store.foods 補全 store.presets 的 food 物件（需在 loadFoods 後呼叫）
+export function enrichPresets() {
+  if (!store.foods.length || !store.presets.length) return
+  store.presets = store.presets.map(preset => ({
+    ...preset,
+    items: preset.items.map(item => {
+      const full = store.foods.find(f =>
+        f['名稱'] === item.food?.['名稱'] &&
+        (f['品牌'] || '') === (item.food?.['品牌'] || '')
+      )
+      return full ? { ...item, food: full } : item
+    }),
+  }))
 }
 
 export function saveCache(foods) {

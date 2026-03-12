@@ -72,7 +72,7 @@ import ImportModal     from '../components/modals/ImportModal.vue'
 import ExportModal     from '../components/modals/ExportModal.vue'
 import ProfileModal    from '../components/modals/ProfileModal.vue'
 
-import { store, loadState, loadRecent, loadPresets, loadUserProfile, clearAll, saveState, showConfirm, openModal, openAddFood } from '../store/index.js'
+import { store, enrichPresets, clearAll, saveState, showConfirm, openModal, openAddFood } from '../store/index.js'
 import { loadFoods } from '../utils/api.js'
 import { isConfigured } from '../store/index.js'
 
@@ -87,11 +87,8 @@ function onMenuToggle(rect) {
 
 // ── 初始化 ────────────────────────────────────────────
 onMounted(async () => {
-  loadState()
-  loadRecent()
-  loadUserProfile()
   await loadFoods()
-  await loadPresets()
+  enrichPresets()   // foods 載入後補全 preset 的 food 物件
 })
 
 // ── 重新整理 ──────────────────────────────────────────
