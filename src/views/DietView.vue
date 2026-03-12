@@ -21,7 +21,11 @@
       <button class="icon-btn" @click="shiftDate(-1)">
         <ChevronLeft :size="16" :stroke-width="1.5" />
       </button>
-      <input type="date" v-model="dateInput" class="date-input" @change="load" />
+      <button class="date-display" @click="openDatePicker">
+        <Calendar :size="14" :stroke-width="1.5" />
+        <span class="date-text">{{ formattedDate }}</span>
+        <input ref="dateInputRef" type="date" v-model="dateInput" class="date-input-hidden" @change="load" />
+      </button>
       <button class="icon-btn" @click="shiftDate(1)">
         <ChevronRight :size="16" :stroke-width="1.5" />
       </button>
@@ -178,7 +182,7 @@
 
 <script setup>
 import { ref, computed, reactive } from 'vue'
-import { ChevronLeft, ChevronRight, Pencil, X, Plus } from 'lucide-vue-next'
+import { ChevronLeft, ChevronRight, Pencil, X, Plus, Calendar } from 'lucide-vue-next'
 import AppHeader      from '../components/AppHeader.vue'
 import AppMenu        from '../components/AppMenu.vue'
 import GroupTabs      from '../components/GroupTabs.vue'
@@ -204,6 +208,20 @@ async function onRefresh() {
 }
 
 // ── 日期 ──────────────────────────────────────────────
+const dateInputRef = ref(null)
+
+function openDatePicker() {
+  const el = dateInputRef.value
+  if (!el) return
+  el.showPicker ? el.showPicker() : el.click()
+}
+
+const WEEKDAY = ['日', '一', '二', '三', '四', '五', '六']
+const formattedDate = computed(() => {
+  const d = new Date(dateInput.value + 'T00:00:00')
+  return `${d.getMonth() + 1}月${d.getDate()}日 (${WEEKDAY[d.getDay()]})`
+})
+
 function todayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
@@ -372,15 +390,29 @@ load()
   gap: 4px;
   padding: 6px 0;
 }
-.date-input {
+.date-display {
   flex: 1;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   border: none;
   background: none;
-  font-size: 15px;
-  font-weight: 500;
-  color: var(--c-text);
   cursor: pointer;
+  color: var(--c-text);
+  position: relative;
+}
+.date-text {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.date-input-hidden {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
 }
 
 /* 當餐小計 */
