@@ -360,6 +360,7 @@ nextTick(() => searchEl.value?.focus())
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Tabs */
@@ -388,6 +389,7 @@ nextTick(() => searchEl.value?.focus())
 
 .modal-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 12px 16px;
   display: flex;
