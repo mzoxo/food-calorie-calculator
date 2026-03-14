@@ -1,10 +1,7 @@
 <template>
   <Teleport to="body">
-    <div class="overlay" @click.self="!submitting && $emit('close')">
+    <div class="overlay" @click.self="$emit('close')">
       <div class="modal add-diet-modal">
-        <div v-if="submitting" class="submitting-overlay">
-          <div class="loading-spinner" />
-        </div>
 
         <!-- Header -->
         <div class="modal-header">
@@ -94,8 +91,8 @@
               </select>
             </div>
 
-            <button class="btn btn-primary btn-block" :disabled="submitting || quantity <= 0" @click="confirmFood">
-              {{ submitting ? '加入中…' : '加入' }}
+            <button class="btn btn-primary btn-block" :disabled="quantity <= 0" @click="confirmFood">
+              加入
             </button>
           </template>
 
@@ -157,7 +154,8 @@
                         </svg>
                       </span>
                       <span class="preset-item-name">{{ item.food['名稱'] }}</span>
-                      <span class="preset-item-qty">{{ item.quantity }}{{ item.mode === 'serving' ? '份' : 'g' }}</span>
+                      <span class="preset-item-qty">{{ itemDisplayQty(pi, ii) }}{{ item.mode === 'serving' ? '份' : 'g' }}</span>
+                      <span class="preset-item-kcal">{{ itemCalories(pi, ii) }} kcal</span>
                     </label>
                   </div>
 
@@ -167,10 +165,10 @@
               <button
                 class="btn btn-primary btn-block"
                 style="margin-top:12px"
-                :disabled="submitting || !hasPresetSelection"
+                :disabled="!hasPresetSelection"
                 @click="confirmPresets"
               >
-                {{ submitting ? '加入中…' : '加入' }}
+                加入
               </button>
             </template>
           </template>
@@ -187,21 +185,19 @@ import { X, ChevronLeft, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-vue-
 import { store, showToast, addToRecent } from '../../store/index.js'
 import { compute } from '../../utils/calc.js'
 import { presetToRows, MEAL_TIMES } from '../../utils/export.js'
-import { logDietRow } from '../../utils/api.js'
 import RecentFoods from '../RecentFoods.vue'
 
 const props = defineProps({
   date:         { type: String, required: true },  // yyyy/MM/dd
   defaultGroup: { type: String, default: '早餐' },
 })
-const emit = defineEmits(['close', 'added'])
+const emit = defineEmits(['close', 'added'])  // added(rows: Array)
 
 // ── Tabs ──────────────────────────────────────────────
 const activeTab = ref('search')
 
 // ── 共用狀態 ──────────────────────────────────────────
 const selectedGroup = ref(props.defaultGroup)
-const submitting    = ref(false)
 const searchEl      = ref(null)
 
 watch(activeTab, () => {
@@ -261,38 +257,30 @@ function getMealTime(group) {
   return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 }
 
-async function confirmFood() {
-  if (!selectedFood.value || quantity.value <= 0 || submitting.value) return
-  submitting.value = true
-  try {
-    const n = compute(selectedFood.value, quantity.value, mode.value)
-    await logDietRow({
-      日期: props.date,
-      餐別: selectedGroup.value,
-      時間: getMealTime(selectedGroup.value),
-      食品名稱: selectedFood.value['名稱'],
-      份量: quantity.value,
-      單位: mode.value === 'serving' ? '份' : 'g',
-      熱量: Math.round(n.calories),
-      蛋白質: n.protein,
-      脂肪: n.fat,
-      碳水: n.carb,
-      纖維: n.fiber,
-      備註: foodNote.value.trim(),
-    })
-    addToRecent(selectedFood.value)
-    showToast('已加入')
-    emit('added')
-    // 回到搜尋狀態，方便繼續加入
-    selectedFood.value = null
-    query.value        = ''
-    searchResults.value = []
-  } catch (e) {
-    showToast('加入失敗')
-    console.error(e)
-  } finally {
-    submitting.value = false
+function confirmFood() {
+  if (!selectedFood.value || quantity.value <= 0) return
+  const n = compute(selectedFood.value, quantity.value, mode.value)
+  const row = {
+    日期: props.date,
+    餐別: selectedGroup.value,
+    時間: getMealTime(selectedGroup.value),
+    食品名稱: selectedFood.value['名稱'],
+    份量: quantity.value,
+    單位: mode.value === 'serving' ? '份' : 'g',
+    熱量: Math.round(n.calories),
+    蛋白質: n.protein,
+    脂肪: n.fat,
+    碳水: n.carb,
+    纖維: n.fiber,
+    備註: foodNote.value.trim(),
   }
+  addToRecent(selectedFood.value)
+  showToast('已加入')
+  emit('added', [row])
+  // 回到搜尋狀態，方便繼續加入
+  selectedFood.value  = null
+  query.value         = ''
+  searchResults.value = []
 }
 
 // ── 常用組合 ──────────────────────────────────────────
@@ -323,6 +311,22 @@ function togglePreset(pi) {
   }
 }
 
+function itemDisplayQty(pi, ii) {
+  const item = store.presets[pi].items[ii]
+  const s = presetStates[pi]
+  if (s.checked) {
+    const multiplier = s.servings / (store.presets[pi].divider || 1)
+    return Math.round(item.quantity * multiplier * 10) / 10
+  }
+  return item.quantity
+}
+
+function itemCalories(pi, ii) {
+  const item = store.presets[pi].items[ii]
+  if (!item.food) return 0
+  return Math.round(compute(item.food, itemDisplayQty(pi, ii), item.mode).calories)
+}
+
 function toggleItem(pi, ii) {
   presetStates[pi].itemChecks[ii] = !presetStates[pi].itemChecks[ii]
 }
@@ -333,10 +337,8 @@ const hasPresetSelection = computed(() =>
   )
 )
 
-async function confirmPresets() {
-  if (!hasPresetSelection.value || submitting.value) return
-  submitting.value = true
-
+function confirmPresets() {
+  if (!hasPresetSelection.value) return
   const rows = []
   store.presets.forEach((preset, pi) => {
     const s = presetStates[pi]
@@ -350,18 +352,9 @@ async function confirmPresets() {
       }
     }
   })
-
-  try {
-    await Promise.all(rows.map(row => logDietRow(row)))
-    showToast(`已加入 ${rows.length} 筆`)
-    emit('added')
-    emit('close')
-  } catch (e) {
-    showToast('加入失敗')
-    console.error(e)
-  } finally {
-    submitting.value = false
-  }
+  showToast(`已加入 ${rows.length} 筆`)
+  emit('added', rows)
+  emit('close')
 }
 
 // 開啟時 focus 搜尋框
@@ -374,16 +367,6 @@ nextTick(() => searchEl.value?.focus())
   display: flex;
   flex-direction: column;
   position: relative;
-}
-.submitting-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  border-radius: var(--radius-lg);
 }
 
 /* Tabs */
@@ -501,6 +484,7 @@ nextTick(() => searchEl.value?.focus())
 .preset-item.disabled { cursor: default; opacity: 0.45; }
 .preset-item-name { flex: 1; }
 .preset-item-qty  { font-size: 12px; color: var(--c-text-muted); flex-shrink: 0; }
+.preset-item-kcal { font-size: 12px; color: var(--c-text-muted); flex-shrink: 0; min-width: 56px; text-align: right; }
 
 .custom-checkbox.disabled { opacity: 0.4; }
 

@@ -11,6 +11,10 @@
           <Calculator :size="15" :stroke-width="1.5" />
           計算機
         </button>
+        <button class="menu-item" @click="goToPresets">
+          <BookMarked :size="15" :stroke-width="1.5" />
+          常用組合
+        </button>
         <button class="menu-item" @click="goToFoods">
           <Database :size="15" :stroke-width="1.5" />
           食材資料庫
@@ -27,7 +31,7 @@
 
 <script setup>
 import { computed } from 'vue'
-import { User, RefreshCw, Database, Calculator } from 'lucide-vue-next'
+import { User, RefreshCw, Database, Calculator, BookMarked } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 
 const props = defineProps({ visible: Boolean, anchor: Object })
@@ -50,6 +54,11 @@ function goToFoods() {
 function goToCalc() {
   emit('close')
   router.push('/calc')
+}
+
+function goToPresets() {
+  emit('close')
+  router.push('/presets')
 }
 </script>
 

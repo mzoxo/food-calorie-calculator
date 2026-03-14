@@ -56,7 +56,9 @@
     </div>
 
     <!-- 空餐別 -->
-    <div v-if="!mealRecords.length" class="state-msg muted">這餐還沒有記錄</div>
+    <div v-if="!mealRecords.length" class="state-msg muted">
+      {{ addingGroups.includes(activeGroup) ? '食材加入中…' : '這餐還沒有記錄' }}
+    </div>
 
     <!-- 記錄列表（格式同 FoodItem） -->
     <div v-else class="group-items">
@@ -67,7 +69,7 @@
           <div class="food-item-info">
             <div class="food-item-name">
               {{ rec.食品名稱 }}
-              <button class="icon-btn name-edit-btn" @click="startEdit(rec)">
+              <button v-if="!String(rec.列號).startsWith('_temp_')" class="icon-btn name-edit-btn" @click="startEdit(rec)">
                 <Pencil :size="14" :stroke-width="1.5" />
               </button>
             </div>
@@ -81,7 +83,7 @@
             <div v-if="rec.備註" class="food-item-note">{{ rec.備註 }}</div>
           </div>
           <span class="food-item-cal">{{ fmt(parseFloat(rec.熱量)) }} kcal</span>
-          <button class="icon-btn food-item-remove" @click="deleteRecord(rec)">
+          <button v-if="!String(rec.列號).startsWith('_temp_')" class="icon-btn food-item-remove" :disabled="deleting === rec.列號" @click="deleteRecord(rec)">
             <X :size="14" :stroke-width="2" />
           </button>
         </div>
@@ -191,7 +193,7 @@ import ProfileModal   from '../components/modals/ProfileModal.vue'
 import AddDietFoodModal from '../components/modals/AddDietFoodModal.vue'
 
 import { store, openModal, loadState, loadUserProfile, showToast, showConfirm, enrichPresets } from '../store/index.js'
-import { fetchDiet, updateDietRow, deleteDietRow, loadFoods } from '../utils/api.js'
+import { fetchDiet, logDietRow, updateDietRow, deleteDietRow, loadFoods } from '../utils/api.js'
 import { compute, fmt } from '../utils/calc.js'
 
 // ── 選單 ──────────────────────────────────────────────
@@ -250,13 +252,41 @@ const tabCounts = computed(() => {
 const records = ref([])
 const loading = ref(false)
 
-async function load() {
-  loading.value = true
-  cancelEdit()
+function dietCacheKey(date) { return `fc_diet_${date.replace(/\//g, '-')}` }
+
+function loadDietCache(date) {
+  try { return JSON.parse(localStorage.getItem(dietCacheKey(date))) || null } catch { return null }
+}
+
+function saveDietCache(date, data) {
   try {
-    records.value = await fetchDiet(apiDate.value)
+    localStorage.setItem(dietCacheKey(date), JSON.stringify(data))
+    // 清理 14 天前的舊快取
+    const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000
+    Object.keys(localStorage)
+      .filter(k => k.startsWith('fc_diet_'))
+      .forEach(k => {
+        const d = new Date(k.replace('fc_diet_', ''))
+        if (!isNaN(d) && d.getTime() < cutoff) localStorage.removeItem(k)
+      })
+  } catch {}
+}
+
+async function load() {
+  cancelEdit()
+  const date = apiDate.value
+  const cached = loadDietCache(date)
+  if (cached) {
+    records.value = cached
+  } else {
+    loading.value = true
+  }
+  try {
+    const fresh = await fetchDiet(date)
+    records.value = fresh
+    saveDietCache(date, fresh)
   } catch (e) {
-    showToast('載入失敗')
+    if (!cached) showToast('載入失敗')
     console.error(e)
   } finally {
     loading.value = false
@@ -339,13 +369,19 @@ function cancelEdit() {
 
 async function saveEdit() {
   saving.value = true
+  const rowId = editingRow.value
+  const idx = records.value.findIndex(r => r.列號 === rowId)
+  if (idx < 0) { saving.value = false; cancelEdit(); return }
+  const prev = { ...records.value[idx] }
+  Object.assign(records.value[idx], editData)
+  saveDietCache(apiDate.value, records.value)
+  cancelEdit()
   try {
-    await updateDietRow(editingRow.value, { ...editData })
-    const idx = records.value.findIndex(r => r.列號 === editingRow.value)
-    if (idx >= 0) Object.assign(records.value[idx], editData)
-    cancelEdit()
+    await updateDietRow(rowId, { ...editData })
     showToast('已儲存')
   } catch (e) {
+    Object.assign(records.value[idx], prev)
+    saveDietCache(apiDate.value, records.value)
     showToast('儲存失敗')
     console.error(e)
   } finally {
@@ -353,25 +389,62 @@ async function saveEdit() {
   }
 }
 
+const deleting = ref(null)
+
 async function deleteRecord(rec) {
   const ok = await showConfirm(`確定刪除「${rec.食品名稱}」？`)
   if (!ok) return
+  deleting.value = rec.列號
+  const prev = records.value
+  records.value = records.value.filter(r => r.列號 !== rec.列號)
+  saveDietCache(apiDate.value, records.value)
   try {
     await deleteDietRow(rec.列號)
-    records.value = records.value.filter(r => r.列號 !== rec.列號)
-    showToast('已刪除')
   } catch (e) {
+    records.value = prev
+    saveDietCache(apiDate.value, prev)
     showToast('刪除失敗')
     console.error(e)
+  } finally {
+    deleting.value = null
   }
 }
 
 // ── 新增 Modal ────────────────────────────────────────
 const showAddModal = ref(false)
+const addingGroups = ref([])
 function openAddModal() { showAddModal.value = true }
 
-function onRecordAdded() {
-  load()
+function onRecordAdded(rows) {
+  // 取出受影響的餐別，顯示「加入中」
+  const groups = [...new Set(rows.map(r => r.餐別))]
+  groups.forEach(g => addingGroups.value.push(g))
+
+  // 樂觀 append（加上暫時 _tempId）
+  const tempRows = rows.map((r, i) => ({ ...r, 列號: `_temp_${Date.now()}_${i}` }))
+  records.value.push(...tempRows)
+  saveDietCache(apiDate.value, records.value)
+
+  // 背景寫入，完成後靜默 refresh 取得真實列號
+  Promise.all(rows.map(row => logDietRow(row)))
+    .then(() => load().then(() => {
+      groups.forEach(g => {
+        const i = addingGroups.value.indexOf(g)
+        if (i >= 0) addingGroups.value.splice(i, 1)
+      })
+    }))
+    .catch(e => {
+      // 寫入失敗，移除暫時資料
+      const tempIds = new Set(tempRows.map(r => r.列號))
+      records.value = records.value.filter(r => !tempIds.has(r.列號))
+      saveDietCache(apiDate.value, records.value)
+      groups.forEach(g => {
+        const i = addingGroups.value.indexOf(g)
+        if (i >= 0) addingGroups.value.splice(i, 1)
+      })
+      showToast('加入失敗')
+      console.error(e)
+    })
 }
 
 // ── 初始化 ────────────────────────────────────────────
