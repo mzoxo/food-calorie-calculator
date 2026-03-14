@@ -123,7 +123,10 @@
                         </svg>
                       </span>
                     </label>
-                    <span class="preset-name">{{ preset.name }}</span>
+                    <span class="preset-name">
+                      {{ preset.name }}
+                      <span v-if="preset.divider > 1" style="font-weight:400;color:var(--c-text-muted)">（÷{{ preset.divider }}）</span>
+                    </span>
                     <template v-if="presetStates[pi].checked">
                       <span class="preset-servings-label">份數</span>
                       <input
@@ -338,7 +341,8 @@ async function confirmPresets() {
   store.presets.forEach((preset, pi) => {
     const s = presetStates[pi]
     if (s.checked) {
-      rows.push(...presetToRows(preset, preset.items, s.servings, selectedGroup.value, props.date, true))
+      const multiplier = s.servings / (preset.divider || 1)
+      rows.push(...presetToRows(preset, preset.items, multiplier, selectedGroup.value, props.date, true))
     } else {
       const selected = preset.items.filter((_, ii) => s.itemChecks[ii])
       if (selected.length) {
