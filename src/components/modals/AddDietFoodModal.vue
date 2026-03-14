@@ -183,7 +183,7 @@ import { ref, computed, reactive, watch, nextTick } from 'vue'
 import { X, ChevronLeft, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-vue-next'
 import { store, showToast, addToRecent } from '../../store/index.js'
 import { compute } from '../../utils/calc.js'
-import { presetToRows } from '../../utils/export.js'
+import { presetToRows, MEAL_TIMES } from '../../utils/export.js'
 import { logDietRow } from '../../utils/api.js'
 import RecentFoods from '../RecentFoods.vue'
 
@@ -252,7 +252,6 @@ function adjustQty(dir) {
   quantity.value = Math.max(0, +(quantity.value + dir * step).toFixed(1))
 }
 
-const MEAL_TIMES = { '早餐': '10:30', '午餐': '12:30', '晚餐': '19:30' }
 function getMealTime(group) {
   if (MEAL_TIMES[group]) return MEAL_TIMES[group]
   const now = new Date()
