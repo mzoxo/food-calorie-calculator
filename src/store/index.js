@@ -95,8 +95,8 @@ export function loadRecent() {
 
 export function savePresets() {
   localStorage.setItem(KEYS.PRESETS, JSON.stringify(store.presets))
-  // 同步到雲端（fire-and-forget）
-  if (isConfigured()) {
+  // 同步到雲端（fire-and-forget，有資料才同步）
+  if (isConfigured() && store.presets.length) {
     import('../utils/api.js').then(({ syncPresets }) => {
       syncPresets(store.presets).catch(e => console.warn('雲端同步失敗', e))
     })
