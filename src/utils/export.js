@@ -88,9 +88,10 @@ export function generateDietRows(groups, groupOrder) {
  */
 export function generatePresetNote(items, servings = 1) {
   return items.map(item => {
+    const raw = item.quantity * servings
     const qty = item.mode === 'serving'
-      ? `${item.quantity * servings}份`
-      : `${item.quantity * servings}g`
+      ? `${Math.round(raw * 10) / 10}份`
+      : `${Math.round(raw * 10) / 10}g`
     return `${item.food['名稱']}${qty}`
   }).join('+')
 }
@@ -127,7 +128,7 @@ export function presetToRows(preset, selectedItems, servings, group, date, asSin
   }
 
   return selectedItems.map(item => {
-    const qty = item.quantity * servings
+    const qty = Math.round(item.quantity * servings * 10) / 10
     const n = compute(item.food, qty, item.mode)
     return {
       日期: date, 餐別: group, 時間: time,
