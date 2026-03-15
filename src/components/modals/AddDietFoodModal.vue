@@ -18,6 +18,7 @@
         <div v-if="!selectedFood" class="modal-tabs">
           <button class="modal-tab" :class="{ active: activeTab === 'search' }" @click="activeTab = 'search'">搜尋食物</button>
           <button class="modal-tab" :class="{ active: activeTab === 'presets' }" @click="activeTab = 'presets'">常用組合</button>
+          <button class="modal-tab" :class="{ active: activeTab === 'copy' }" @click="activeTab = 'copy'">複製</button>
         </div>
 
         <div class="modal-body">
@@ -173,6 +174,61 @@
             </template>
           </template>
 
+          <!-- ── Tab 3：複製 ── -->
+          <template v-if="activeTab === 'copy' && !selectedFood">
+            <div class="copy-controls">
+              <div class="field">
+                <span class="field-label">來源日期</span>
+                <input v-model="copyDate" type="date" class="input" @change="fetchCopyRecords" />
+              </div>
+              <div class="field">
+                <span class="field-label">來源餐別</span>
+                <select v-model="copyGroup" class="input" @change="fetchCopyRecords">
+                  <option v-for="g in store.groupOrder" :key="g">{{ g }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div v-if="copyLoading" class="state-msg muted">載入中…</div>
+            <div v-else-if="copyError" class="state-msg muted">{{ copyError }}</div>
+            <div v-else-if="copyRecords.length === 0 && copyDate" class="state-msg muted">這天這餐沒有記錄</div>
+
+            <ul v-if="copyRecords.length" class="copy-list">
+              <li
+                v-for="(rec, i) in copyRecords"
+                :key="i"
+                class="copy-item"
+                :class="{ selected: copyChecks[i] }"
+                @click="copyChecks[i] = !copyChecks[i]"
+              >
+                <span class="custom-checkbox" :class="{ checked: copyChecks[i] }">
+                  <svg v-if="copyChecks[i]" width="10" height="10" viewBox="0 0 10 10">
+                    <polyline points="1.5,5 4,7.5 8.5,2" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <span class="copy-item-name">{{ rec.食品名稱 }}</span>
+                <span class="copy-item-meta">{{ rec.份量 }}{{ rec.單位 }} · {{ rec.熱量 }} kcal</span>
+              </li>
+            </ul>
+
+            <div v-if="copyRecords.length" class="field" style="margin-top:4px">
+              <span class="field-label">加入至</span>
+              <select v-model="selectedGroup" class="input">
+                <option v-for="g in store.groupOrder" :key="g">{{ g }}</option>
+              </select>
+            </div>
+
+            <button
+              v-if="copyRecords.length"
+              class="btn btn-primary btn-block"
+              style="margin-top:4px"
+              :disabled="!copyChecks.some(Boolean)"
+              @click="confirmCopy"
+            >
+              加入
+            </button>
+          </template>
+
         </div>
       </div>
     </div>
@@ -185,6 +241,7 @@ import { X, ChevronLeft, ChevronDown, ChevronUp, Minus, Plus } from 'lucide-vue-
 import { store, showToast, addToRecent } from '../../store/index.js'
 import { compute } from '../../utils/calc.js'
 import { presetToRows, MEAL_TIMES } from '../../utils/export.js'
+import { fetchDiet } from '../../utils/api.js'
 import RecentFoods from '../RecentFoods.vue'
 
 const props = defineProps({
@@ -357,6 +414,64 @@ function confirmPresets() {
   emit('close')
 }
 
+// ── 複製 ──────────────────────────────────────────────
+function yesterday() {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return d.toISOString().slice(0, 10)
+}
+
+const copyDate    = ref(yesterday())
+const copyGroup   = ref(props.defaultGroup)
+const copyRecords = ref([])
+const copyChecks  = ref([])
+const copyLoading = ref(false)
+const copyError   = ref('')
+
+async function fetchCopyRecords() {
+  if (!copyDate.value) return
+  copyLoading.value = true
+  copyError.value   = ''
+  copyRecords.value = []
+  copyChecks.value  = []
+  try {
+    const date = copyDate.value.replace(/-/g, '/')
+    const all  = await fetchDiet(date)
+    copyRecords.value = all.filter(r => r.餐別 === copyGroup.value)
+    copyChecks.value  = copyRecords.value.map(() => false)
+  } catch {
+    copyError.value = '載入失敗，請確認網路或 API 設定'
+  } finally {
+    copyLoading.value = false
+  }
+}
+
+watch(activeTab, (tab) => {
+  if (tab === 'copy' && !copyRecords.value.length && !copyLoading.value) fetchCopyRecords()
+})
+
+function confirmCopy() {
+  const selected = copyRecords.value.filter((_, i) => copyChecks.value[i])
+  if (!selected.length) return
+  const rows = selected.map(rec => ({
+    日期:   props.date,
+    餐別:   selectedGroup.value,
+    時間:   getMealTime(selectedGroup.value),
+    食品名稱: rec.食品名稱,
+    份量:   rec.份量,
+    單位:   rec.單位,
+    熱量:   rec.熱量,
+    蛋白質: rec.蛋白質,
+    脂肪:   rec.脂肪,
+    碳水:   rec.碳水,
+    纖維:   rec.纖維,
+    備註:   rec.備註 || '',
+  }))
+  showToast(`已加入 ${rows.length} 筆`)
+  emit('added', rows)
+  emit('close')
+}
+
 // 開啟時 focus 搜尋框
 nextTick(() => searchEl.value?.focus())
 </script>
@@ -487,6 +602,33 @@ nextTick(() => searchEl.value?.focus())
 .preset-item-kcal { font-size: 12px; color: var(--c-text-muted); flex-shrink: 0; min-width: 56px; text-align: right; }
 
 .custom-checkbox.disabled { opacity: 0.4; }
+
+/* 複製 */
+.copy-controls { display: flex; flex-direction: column; gap: 8px; }
+.copy-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius);
+  overflow-y: auto;
+  max-height: 240px;
+}
+.copy-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--c-border-light);
+  font-size: 13px;
+  transition: background var(--duration) var(--ease);
+}
+.copy-item:last-child { border-bottom: none; }
+.copy-item:hover { background: var(--c-surface); }
+.copy-item.selected { background: var(--c-surface); }
+.copy-item-name { flex: 1; }
+.copy-item-meta { font-size: 12px; color: var(--c-text-muted); flex-shrink: 0; }
 
 /* 狀態訊息 */
 .state-msg { text-align: center; padding: 24px 0; font-size: 14px; }
